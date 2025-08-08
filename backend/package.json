@@ -1,0 +1,46 @@
+{
+  "name": "personal-defi-manager-backend",
+  "version": "1.0.0",
+  "description": "Backend API for Personal DeFi Wealth Manager - AI-powered yield optimization on Avalanche",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node dist/index.js",
+    "dev": "nodemon src/index.ts",
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "echo \"Linting not configured yet\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "defi",
+    "avalanche",
+    "yield-optimization",
+    "ai",
+    "blockchain",
+    "express",
+    "typescript"
+  ],
+  "author": "Personal DeFi Manager Team",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "ethers": "^6.15.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.0.1",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.1",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^24.2.0",
+    "concurrently": "^9.2.0",
+    "nodemon": "^3.1.10",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "abi": [
+    {
+      "inputs": [{ "name": "user", "type": "address" }],
+      "name": "getUserPortfolio",
+      "outputs": [
+        {
+          "components": [
+            { "name": "riskScore", "type": "uint8" },
+            { "name": "totalDeposited", "type": "uint256" },
+            { "name": "lastRebalance", "type": "uint256" },
+            { "name": "autoRebalance", "type": "bool" }
+          ],
+          "name": "profile",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            { "name": "benqiAmount", "type": "uint256" },
+            { "name": "traderJoeAmount", "type": "uint256" },
+            { "name": "yieldYakAmount", "type": "uint256" }
+          ],
+          "name": "allocation",
+          "type": "tuple"
+        },
+        { "name": "estimatedValue", "type": "uint256" }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "getCurrentYields",
+      "outputs": [
+        { "name": "benqiAPY", "type": "uint256" },
+        { "name": "traderJoeAPY", "type": "uint256" },
+        { "name": "yieldYakAPY", "type": "uint256" },
+        { "name": "lastUpdated", "type": "uint256" }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [{ "name": "user", "type": "address" }],
+      "name": "getRebalanceRecommendation",
+      "outputs": [
+        { "name": "shouldRebalance", "type": "bool" },
+        { "name": "newBenqiAllocation", "type": "uint256" },
+        { "name": "newTraderJoeAllocation", "type": "uint256" },
+        { "name": "newYieldYakAllocation", "type": "uint256" }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [{ "name": "_riskScore", "type": "uint8" }],
+      "name": "optimizeYield",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "rebalance",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "emergencyWithdraw",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        { "indexed": true, "name": "user", "type": "address" },
+        { "indexed": false, "name": "amount", "type": "uint256" },
+        { "indexed": false, "name": "riskScore", "type": "uint8" }
+      ],
+      "name": "YieldOptimized",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        { "indexed": true, "name": "user", "type": "address" },
+        { "indexed": false, "name": "totalValue", "type": "uint256" }
+      ],
+      "name": "Rebalanced",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        { "indexed": true, "name": "user", "type": "address" },
+        { "indexed": false, "name": "amount", "type": "uint256" }
+      ],
+      "name": "Withdrawn",
+      "type": "event"
+    }
+  ]
+}
