@@ -110,13 +110,20 @@ class APIClient {
     monthlyIncome?: number
     monthlyExpenses?: number
   }): Promise<{
-    type: 'rebalance' | 'deposit' | 'withdraw' | 'yield_opportunity'
-    title: string
-    description: string
-    confidence: number
-    expectedReturn?: number
-    riskLevel: 'low' | 'medium' | 'high'
-    actionData?: any
+    recommendation: {
+      type: 'rebalance' | 'deposit' | 'withdraw' | 'yield_opportunity'
+      title: string
+      description: string
+      confidence: number
+      expectedReturn?: number
+      riskLevel: 'low' | 'medium' | 'high'
+      actionData?: any
+    }
+    userProfile: {
+      riskScore: number
+      riskProfile: string
+      lastRebalance: Date
+    }
   }> {
     return this.request('/ai/recommendation', {
       method: 'POST',

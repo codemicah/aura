@@ -208,7 +208,9 @@ export class AIService {
         yieldYak: Math.round(allocation.yieldYak),
         rationale,
         expectedAPY: expectedAPY / 100,
-        riskLevel: riskProfile.toLowerCase() as "low" | "medium" | "high",
+        riskLevel: riskProfile === "Conservative" ? "low" : 
+                   riskProfile === "Balanced" ? "medium" : 
+                   riskProfile === "Aggressive" ? "high" : "low",
       };
 
       logger.ai("Allocation strategy generated", strategy.expectedAPY, {

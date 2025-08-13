@@ -153,7 +153,7 @@ export function InvestmentFlow() {
                 <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
                   Confidence:{" "}
                   {Math.round(
-                    aiFlow.recommendations.recommendation.confidence * 100
+                    (aiFlow.recommendations.recommendation?.confidence ?? 0.5) * 100
                   )}
                   %
                 </span>
@@ -177,7 +177,7 @@ export function InvestmentFlow() {
                       : "bg-red-100 text-red-700"
                   }`}
                 >
-                  Risk: {aiFlow.recommendations.recommendation.riskLevel}
+                  Risk: {aiFlow.recommendations.recommendation?.riskLevel || 'unknown'}
                 </span>
               </div>
             </div>

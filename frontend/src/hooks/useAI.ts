@@ -156,7 +156,7 @@ export function useAIRecommendations() {
       })
       
       const recommendation: AIRecommendation = {
-        ...result,
+        ...result.recommendation,
         createdAt: new Date(),
       }
       
