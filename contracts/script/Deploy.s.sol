@@ -84,7 +84,10 @@ contract DeployScript is Script {
         console.log("YieldYak Farm:", yieldOptimizer.yieldYakFarm());
         
         (uint256 benqiAPY, uint256 traderJoeAPY, uint256 yieldYakAPY,) = yieldOptimizer.getCurrentYields();
-        console.log("Current Yields - Benqi:", benqiAPY, "TraderJoe:", traderJoeAPY, "YieldYak:", yieldYakAPY);
+        console.log("Current Yields:");
+        console.log("- Benqi APY:", benqiAPY);
+        console.log("- TraderJoe APY:", traderJoeAPY);
+        console.log("- YieldYak APY:", yieldYakAPY);
         
         console.log("\n=== Next Steps ===");
         console.log("1. Update frontend with contract address:", address(yieldOptimizer));
@@ -154,11 +157,11 @@ contract DeployScript is Script {
         require(yieldOptimizer.REBALANCE_THRESHOLD() == 500, "REBALANCE_THRESHOLD incorrect");
         require(yieldOptimizer.BASIS_POINTS() == 10000, "BASIS_POINTS incorrect");
         
-        console.log("✅ Deployment verification completed successfully");
+        console.log("Deployment verification completed successfully");
     }
 
-    // Helper function to create deterministic addresses for testing
-    function makeAddr(string memory name) internal pure returns (address) {
+    // Create deterministic addresses for testing (override forge-std version)
+    function makeAddr(string memory name) internal pure override returns (address) {
         return address(uint160(uint256(keccak256(abi.encodePacked(name)))));
     }
 }

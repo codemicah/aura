@@ -1,28 +1,36 @@
-# Personal DeFi Wealth Manager - Backend API
+# AURA Backend - AI Agent Engine
 
-Backend API for the Personal DeFi Wealth Manager, an AI-powered yield optimization platform for Avalanche DeFi protocols.
+The backend service powering AURA's autonomous AI agent for DeFi portfolio management.
 
 ## 🏗️ Architecture
 
 ```
 src/
-├── controllers/        # Request handlers and business logic
-├── middleware/        # Express middleware (auth, validation, etc.)
-├── routes/           # API route definitions
-├── services/         # External service integrations
-│   ├── blockchain.ts # Ethereum/Avalanche blockchain interaction
-│   ├── database.ts   # SQLite database operations
-│   └── defi.ts      # DeFi protocol data aggregation
-├── types/           # TypeScript type definitions
-├── utils/           # Utility functions and configuration
-└── index.ts         # Application entry point
+├── controllers/          # Request handlers
+│   ├── aiController.ts         # AI agent decision endpoints
+│   ├── analyticsController.ts  # Performance analytics
+│   ├── marketController.ts      # Market data aggregation
+│   └── portfolioController.ts   # Portfolio management
+├── services/            # Core services
+│   ├── ai.ts                   # AI decision engine
+│   ├── analytics.ts            # Performance calculation
+│   ├── autoRebalance.ts        # Autonomous rebalancing
+│   ├── backtesting.ts          # Strategy backtesting
+│   ├── blockchain.ts           # Smart contract interaction
+│   ├── database.ts             # SQLite operations
+│   ├── defi.ts                 # Protocol data aggregation
+│   └── demoScenarios.ts        # Demo user generation
+├── routes/              # API routes
+├── middleware/          # Express middleware
+├── types/              # TypeScript definitions
+├── utils/              # Utilities and config
+└── index.ts            # Application entry point
 ```
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-
-- Node.js 18+ 
+- Node.js 18+
 - npm or yarn
 - SQLite3
 
@@ -32,283 +40,191 @@ src/
 # Install dependencies
 npm install
 
-# Copy environment file
+# Set up environment
 cp .env.example .env
-
 # Edit .env with your configuration
-nano .env
 
-# Build the application
-npm run build
+# Initialize database with demo data
+npm run seed
 
 # Start development server
 npm run dev
-
-# Start production server
-npm start
 ```
 
-## 📡 API Endpoints
+## ⚙️ Environment Configuration
 
-### Portfolio Management (`/api/v1/portfolio`)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/:address` | Get user portfolio data |
-| GET | `/:address/balance` | Get user AVAX balance |
-| GET | `/:address/rebalance-recommendation` | Get AI rebalancing advice |
-| GET | `/transaction/:hash` | Get transaction status |
-| GET | `/gas-price` | Get current gas prices |
-| GET | `/health` | Service health check |
-
-### Market Data (`/api/v1/market`)
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/yields` | Current protocol yields |
-| GET | `/data` | Comprehensive market data |
-| GET | `/avax-price` | Current AVAX price |
-| GET | `/protocol/:protocol` | Specific protocol data |
-| GET | `/protocol/:protocol/history` | Historical yields |
-| DELETE | `/cache` | Clear data cache |
-| GET | `/cache/stats` | Cache statistics |
-
-## 🔧 Configuration
-
-### Environment Variables
-
-```bash
-# Server Configuration
-NODE_ENV=development
+```env
+# Server
 PORT=3001
-API_BASE_PATH=/api/v1
+NODE_ENV=development
 
 # Database
 DATABASE_PATH=./data/defi-manager.db
 
 # Blockchain
 AVALANCHE_RPC_URL=https://api.avax.network/ext/bc/C/rpc
-AVALANCHE_FUJI_RPC_URL=https://api.avax-test.network/ext/bc/C/rpc
-CHAIN_ID=43113
+YIELD_OPTIMIZER_ADDRESS=0x... # Deploy contract first
 
-# Smart Contracts (Deploy contracts first!)
-YIELD_OPTIMIZER_MAINNET=0x...
-YIELD_OPTIMIZER_FUJI=0x...
-
-# Security
-API_RATE_LIMIT=100
-JWT_SECRET=your-secret-key
-
-# External APIs
-COINGECKO_API_KEY=your-coingecko-key
+# AI Configuration
+ENABLE_AI_RECOMMENDATIONS=true
+AI_CONFIDENCE_THRESHOLD=0.7
+AI_LEARNING_RATE=0.15
 ```
+
+## 📡 API Endpoints
+
+### AI Agent (`/api/v1/ai`)
+- `POST /assess-risk` - Calculate risk score from user profile
+- `GET /allocation-strategy` - Get AI-determined portfolio allocation
+- `POST /recommendations` - Get personalized investment advice
+- `POST /calculate-surplus` - Calculate investable amount
+- `GET /learning-metrics` - View AI learning progress
+
+### Portfolio (`/api/v1/portfolio`)
+- `GET /:address` - Get user portfolio
+- `GET /:address/balance` - Get wallet balance
+- `GET /:address/history` - Portfolio history
+- `POST /:address/performance` - Performance metrics
+- `GET /health` - Service health check
+
+### Market Data (`/api/v1/market`)
+- `GET /yields` - Current protocol APYs
+- `GET /data` - Comprehensive market data
+- `GET /avax-price` - AVAX/USD price
+- `GET /protocol/:name` - Specific protocol data
+
+### Analytics (`/api/v1/analytics`)
+- `GET /performance/:address` - Portfolio performance
+- `GET /risk-metrics/:address` - Risk analysis
+- `GET /benchmark-comparison/:address` - Benchmark comparisons
+
+### Backtesting (`/api/v1/backtesting`)
+- `POST /run` - Run backtest simulation
+- `GET /scenarios` - Get test scenarios
+
+## 🤖 AI Agent Features
+
+### Risk Assessment Engine
+Analyzes multiple factors to generate risk scores (0-100):
+- Age and life stage
+- Income and expenses
+- Investment goals
+- Risk tolerance questionnaire
+
+### Allocation Strategy
+Dynamic portfolio allocation based on:
+- **Conservative (0-33)**: 70% Benqi, 30% TraderJoe
+- **Balanced (34-66)**: 40% Benqi, 40% TraderJoe, 20% YieldYak
+- **Aggressive (67-100)**: 20% Benqi, 30% TraderJoe, 50% YieldYak
+
+### Learning System
+- Tracks user behavior patterns
+- Adapts recommendations over time
+- Improves accuracy with each interaction
+- Stores learning data in SQLite
+
+### Auto-Rebalancing
+Autonomous rebalancing triggers:
+- Time-based (configurable frequency)
+- Drift threshold (>10% allocation drift)
+- Market opportunity (>1% APY improvement)
+- Risk profile changes
 
 ## 🗄️ Database Schema
 
-The backend uses SQLite with the following tables:
-
-- **user_profiles** - User risk profiles and preferences
-- **transactions** - Transaction history and status
-- **ai_recommendations** - AI-generated investment advice  
-- **portfolio_snapshots** - Historical portfolio data
-- **market_data_cache** - Cached market data for performance
-
-## 🔗 Blockchain Integration
-
-### Supported Networks
-
-- **Avalanche C-Chain (43114)** - Production
-- **Avalanche Fuji (43113)** - Testing
-
-### Smart Contract Integration
-
-The backend integrates with the YieldOptimizer smart contract deployed on Avalanche networks:
-
-```typescript
-// Contract methods used:
-- getUserPortfolio(address) 
-- getCurrentYields()
-- getRebalanceRecommendation(address)
+```sql
+-- Core tables
+user_profiles         # User risk profiles and preferences
+portfolio_snapshots   # Historical portfolio data
+transactions         # Transaction history
+ai_recommendations   # AI-generated advice
+market_data_cache    # Cached protocol data
 ```
 
-**⚠️ Important**: Deploy the YieldOptimizer smart contract before using the API.
+## 🔗 Smart Contract Integration
 
-## 🧠 DeFi Protocol Integration
-
-### Supported Protocols
-
-1. **Benqi** - Lending/borrowing yields
-2. **TraderJoe** - DEX liquidity provision yields  
-3. **YieldYak** - Auto-compounding farming yields
-
-### Data Sources
-
-- **On-chain**: Smart contract calls for real-time data
-- **Off-chain**: Protocol APIs for supplementary data
-- **Price feeds**: CoinGecko for AVAX/USD pricing
-- **Caching**: 5-minute cache for external API calls
-
-## 📊 API Response Format
+The backend interacts with the YieldOptimizer contract:
 
 ```typescript
-// Success Response
+// Key methods
+getUserPortfolio(address)
+allocateFunds(amounts, riskScore)
+withdrawAll()
+getProtocolBalances()
+```
+
+## 📊 Response Format
+
+```typescript
+// Success
 {
   "success": true,
   "data": { ... },
-  "timestamp": "2025-01-01T00:00:00.000Z"
+  "timestamp": "2025-01-01T00:00:00Z"
 }
 
-// Error Response  
+// Error
 {
   "success": false,
   "error": "Error message",
-  "code": "ERROR_CODE",
-  "timestamp": "2025-01-01T00:00:00.000Z"
+  "code": "ERROR_CODE"
 }
 ```
 
-## 🛡️ Security Features
+## 🛡️ Security
 
-- **Rate Limiting** - 100 requests per 15-minute window
-- **CORS Protection** - Configurable allowed origins
-- **Input Validation** - Ethereum address validation
-- **Error Handling** - Comprehensive error catching
-- **Security Headers** - Helmet.js implementation
-- **Request Logging** - Morgan + custom logging
+- Rate limiting (100 req/15min)
+- Input validation
+- CORS protection
+- Helmet.js headers
+- Error sanitization
 
-## 🚨 Error Handling
-
-The API implements comprehensive error handling:
-
-```typescript
-// Custom Error Types
-- APIError - General API errors
-- ValidationError - Input validation errors  
-- NotFoundError - Resource not found errors
-
-// HTTP Status Codes
-- 200: Success
-- 400: Bad Request / Validation Error
-- 404: Not Found
-- 429: Too Many Requests  
-- 503: Service Unavailable (contract not deployed)
-- 500: Internal Server Error
-```
-
-## 📈 Monitoring & Logging
-
-### Health Checks
-
-- `GET /health` - Basic server health
-- `GET /api/v1/portfolio/health` - Full service health including blockchain and DeFi protocols
-
-### Logging Levels
-
-- **Error** - Critical failures
-- **Warn** - Important warnings  
-- **Info** - General information
-- **Debug** - Detailed debugging (dev only)
-
-### Log Outputs
-
-- **Console** - Development and error logs
-- **File** - Production logs in `./logs/app.log`
-
-## 🧪 Development
-
-### Running Tests
+## 📝 Scripts
 
 ```bash
-# Tests not implemented yet
-npm test  
+npm run dev         # Development server with hot reload
+npm run build       # TypeScript compilation
+npm run start       # Production server
+npm run seed        # Seed demo data
+npm run test        # Run tests (TBD)
+npm run clean       # Clean build artifacts
 ```
 
-### Code Quality
+## 🧪 Demo Mode
 
-```bash
-# Type checking
-npm run typecheck
+The backend includes three demo personas for testing:
 
-# Build check
-npm run build
+| User | Risk Score | Strategy |
+|------|------------|----------|
+| Sarah Thompson | 28 | Conservative |
+| Mike Chen | 52 | Balanced |
+| Jennifer Rodriguez | 78 | Aggressive |
 
-# Clean build
-npm run clean && npm run build
-```
+Run `npm run seed` to populate demo data.
 
-### Development Tools
+## 🚨 Troubleshooting
 
-- **TypeScript** - Type safety
-- **Nodemon** - Auto-restart on changes
-- **ts-node** - Direct TypeScript execution
-- **ESLint** - Code linting (to be configured)
-
-## 🚀 Production Deployment
-
-### Build Process
-
-```bash
-# Clean and build
-npm run clean
-npm run build
-
-# Start production server
-NODE_ENV=production npm start
-```
-
-### Production Requirements
-
-- Deploy YieldOptimizer smart contracts to target networks
-- Configure production environment variables
-- Set up database backup strategy
-- Configure reverse proxy (nginx/Apache)
-- Set up monitoring and alerting
-- Configure SSL/TLS certificates
-
-## 🤝 Integration with Frontend
-
-The backend is designed to work seamlessly with the Next.js frontend:
-
-- **CORS configured** for localhost:3000 (development)
-- **Consistent API responses** matching frontend expectations
-- **Real-time data** with caching for performance
-- **Error handling** compatible with frontend notification system
-
-## 📋 Known Limitations
-
-1. **Contract Deployment Required** - API will return 503 errors until contracts are deployed
-2. **Mock Historical Data** - Historical yield data is currently mocked
-3. **Limited Protocol APIs** - Some protocols may have restricted API access
-4. **No Authentication** - Currently operates without user authentication
-5. **SQLite Database** - Not suitable for high-concurrency production use
-
-## 🛠️ Troubleshooting
-
-### Common Issues
-
-**"No contract deployed for chain X"**
-- Deploy the YieldOptimizer smart contract first
-- Update contract addresses in environment variables
+**Contract not deployed error**
+- Deploy YieldOptimizer contract first
+- Update YIELD_OPTIMIZER_ADDRESS in .env
 
 **Database errors**
-- Ensure `./data/` directory exists and is writable
-- Check SQLite installation
+- Ensure ./data/ directory exists
+- Check write permissions
+- Run `npm run seed` to initialize
 
-**RPC connection failures**  
-- Verify Avalanche RPC URLs are accessible
+**RPC connection failed**
+- Verify Avalanche RPC URL
 - Check network connectivity
+- Try alternative RPC endpoints
 
-**API rate limits**
-- Reduce request frequency
-- Check external API quotas (CoinGecko, etc.)
+## 📋 Requirements
+
+- **Runtime**: Node.js 18+
+- **Database**: SQLite3
+- **Network**: Avalanche C-Chain access
+- **Contract**: Deployed YieldOptimizer
 
 ---
 
-## 📞 Support
-
-For issues and questions:
-
-1. Check this README
-2. Review error logs in `./logs/app.log`
-3. Verify environment configuration
-4. Ensure all dependencies are installed
+*AURA Backend - Autonomous AI for DeFi Management*

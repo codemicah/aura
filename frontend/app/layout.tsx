@@ -1,32 +1,30 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Web3Provider } from "../src/components/Web3Provider";
+import { AuthProvider } from "../src/contexts/AuthContext";
+import Header from "../src/components/Header";
+import MobileNav from "../src/components/MobileNav";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Personal DeFi Wealth Manager",
-  description: "AI-powered financial advisor that optimizes yields across Avalanche DeFi protocols",
-  keywords: ["DeFi", "Avalanche", "Yield Optimization", "Personal Finance", "AI", "Blockchain"],
-  authors: [{ name: "Personal DeFi Wealth Manager Team" }],
+  title: "AURA - Autonomous DeFi Agent",
+  description: "Autonomous AI agent that revolutionizes DeFi wealth management through intelligent portfolio optimization",
+  keywords: ["DeFi", "Avalanche", "AI Agent", "Autonomous Trading", "Yield Optimization", "Machine Learning", "Blockchain"],
+  authors: [{ name: "AURA Team" }],
   openGraph: {
-    title: "Personal DeFi Wealth Manager",
-    description: "AI-powered financial advisor that optimizes yields across Avalanche DeFi protocols",
+    title: "AURA - Autonomous DeFi Agent",
+    description: "Autonomous AI agent that revolutionizes DeFi wealth management through intelligent portfolio optimization",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Personal DeFi Wealth Manager",
-    description: "AI-powered financial advisor that optimizes yields across Avalanche DeFi protocols",
+    title: "AURA - Autonomous DeFi Agent",
+    description: "Autonomous AI agent that revolutionizes DeFi wealth management through intelligent portfolio optimization",
   },
 };
 
@@ -38,10 +36,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${inter.className} antialiased bg-gray-900 text-white`}
       >
         <Web3Provider>
-          {children}
+          <AuthProvider>
+            <Header />
+            <MobileNav />
+            <main className="pt-16 min-h-screen">
+              {children}
+            </main>
+          </AuthProvider>
         </Web3Provider>
       </body>
     </html>

@@ -1,8 +1,9 @@
-import { Request, Response, NextFunction } from 'express'
-import { defiDataService } from '../services/defi'
-import { blockchainService } from '../services/blockchain'
-import { logger } from '../utils/logger'
-import { ApiResponse, APIError } from '../types'
+import { Request, Response, NextFunction } from "express";
+import { defiDataService } from "../services/defi";
+import { blockchainService } from "../services/blockchain";
+import { logger } from "../utils/logger";
+import { ApiResponse, APIError } from "../types";
+import { config } from "../utils/config";
 
 export class MarketController {
   /**
@@ -10,34 +11,36 @@ export class MarketController {
    */
   async getCurrentYields(req: Request, res: Response, next: NextFunction) {
     try {
-      const chainId = parseInt(req.query.chainId as string) || 43114
+      const chainId = parseInt(req.query.chainId as string) || config.CHAIN_ID;
 
-      logger.info('Fetching current yields', { chainId })
+      logger.info("Fetching current yields", { chainId });
 
       // Get yields from smart contract (on-chain data)
-      const onChainYields = await blockchainService.getCurrentYields(chainId)
-      
+      const onChainYields = await blockchainService.getCurrentYields(chainId);
+
       // Get yields from external APIs (off-chain data for comparison)
-      const protocolData = await defiDataService.getAllProtocolData()
+      const protocolData = await defiDataService.getAllProtocolData();
 
       const response: ApiResponse = {
         success: true,
         data: {
           onChain: onChainYields,
           offChain: {
-            benqi: protocolData.find(p => p.protocol === 'benqi')?.apy || 0,
-            traderJoe: protocolData.find(p => p.protocol === 'traderjoe')?.apy || 0,
-            yieldYak: protocolData.find(p => p.protocol === 'yieldyak')?.apy || 0
+            benqi: protocolData.find((p) => p.protocol === "benqi")?.apy || 0,
+            traderJoe:
+              protocolData.find((p) => p.protocol === "traderjoe")?.apy || 0,
+            yieldYak:
+              protocolData.find((p) => p.protocol === "yieldyak")?.apy || 0,
           },
           protocols: protocolData,
-          lastUpdated: new Date()
+          lastUpdated: new Date(),
         },
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      };
 
-      res.json(response)
+      res.json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
@@ -46,21 +49,24 @@ export class MarketController {
    */
   async getMarketData(req: Request, res: Response, next: NextFunction) {
     try {
-      logger.info('Fetching detailed market data')
+      logger.info("Fetching detailed market data");
 
       const [marketSummary, avaxPrice] = await Promise.all([
         defiDataService.getMarketSummary(),
-        defiDataService.getAVAXPrice()
-      ])
+        defiDataService.getAVAXPrice(),
+      ]);
 
       // Calculate total metrics
-      const totalTVL = marketSummary.reduce((sum, market) => 
-        sum + parseFloat(market.tvl), 0
-      )
-      
-      const weightedAverageAPY = marketSummary.reduce((sum, market) => 
-        sum + (market.apy * parseFloat(market.tvl)), 0
-      ) / totalTVL
+      const totalTVL = marketSummary.reduce(
+        (sum, market) => sum + parseFloat(market.tvl),
+        0
+      );
+
+      const weightedAverageAPY =
+        marketSummary.reduce(
+          (sum, market) => sum + market.apy * parseFloat(market.tvl),
+          0
+        ) / totalTVL;
 
       const response: ApiResponse = {
         success: true,
@@ -71,16 +77,16 @@ export class MarketController {
             totalTVLUSD: (totalTVL * avaxPrice).toFixed(2),
             averageAPY: weightedAverageAPY.toFixed(2),
             protocolCount: marketSummary.length,
-            avaxPrice
+            avaxPrice,
           },
-          lastUpdated: new Date()
+          lastUpdated: new Date(),
         },
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      };
 
-      res.json(response)
+      res.json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
@@ -89,22 +95,22 @@ export class MarketController {
    */
   async getAVAXPrice(req: Request, res: Response, next: NextFunction) {
     try {
-      const avaxPrice = await defiDataService.getAVAXPrice()
-      
+      const avaxPrice = await defiDataService.getAVAXPrice();
+
       const response: ApiResponse = {
         success: true,
         data: {
           price: avaxPrice,
-          currency: 'USD',
-          source: 'CoinGecko',
-          lastUpdated: new Date()
+          currency: "USD",
+          source: "CoinGecko",
+          lastUpdated: new Date(),
         },
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      };
 
-      res.json(response)
+      res.json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
@@ -113,25 +119,25 @@ export class MarketController {
    */
   async getProtocolData(req: Request, res: Response, next: NextFunction) {
     try {
-      const { protocol } = req.params
-      
-      if (!['benqi', 'traderjoe', 'yieldyak'].includes(protocol)) {
-        throw new APIError('Invalid protocol specified', 400)
+      const { protocol } = req.params;
+
+      if (!["benqi", "traderjoe", "yieldyak"].includes(protocol)) {
+        throw new APIError("Invalid protocol specified", 400);
       }
 
-      let protocolData
+      let protocolData;
       switch (protocol) {
-        case 'benqi':
-          protocolData = await defiDataService.getBenqiData()
-          break
-        case 'traderjoe':
-          protocolData = await defiDataService.getTraderJoeData()
-          break
-        case 'yieldyak':
-          protocolData = await defiDataService.getYieldYakData()
-          break
+        case "benqi":
+          protocolData = await defiDataService.getBenqiData();
+          break;
+        case "traderjoe":
+          protocolData = await defiDataService.getTraderJoeData();
+          break;
+        case "yieldyak":
+          protocolData = await defiDataService.getYieldYakData();
+          break;
         default:
-          throw new APIError('Protocol not supported', 400)
+          throw new APIError("Protocol not supported", 400);
       }
 
       const response: ApiResponse = {
@@ -139,14 +145,14 @@ export class MarketController {
         data: {
           protocol,
           data: protocolData[0], // Most protocols return array with single item
-          isActive: protocolData[0]?.isActive || false
+          isActive: protocolData[0]?.isActive || false,
         },
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      };
 
-      res.json(response)
+      res.json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
@@ -155,41 +161,44 @@ export class MarketController {
    */
   async getHistoricalYields(req: Request, res: Response, next: NextFunction) {
     try {
-      const { protocol } = req.params
-      const days = parseInt(req.query.days as string) || 30
-      
-      if (!['benqi', 'traderjoe', 'yieldyak'].includes(protocol)) {
-        throw new APIError('Invalid protocol specified', 400)
+      const { protocol } = req.params;
+      const days = parseInt(req.query.days as string) || 30;
+
+      if (!["benqi", "traderjoe", "yieldyak"].includes(protocol)) {
+        throw new APIError("Invalid protocol specified", 400);
       }
 
       // Mock historical data - in production, this would come from a time-series database
       const generateMockHistory = (baseAPY: number, days: number) => {
-        const history = []
-        const now = new Date()
-        
+        const history = [];
+        const now = new Date();
+
         for (let i = days - 1; i >= 0; i--) {
-          const date = new Date(now.getTime() - (i * 24 * 60 * 60 * 1000))
-          const variation = (Math.random() - 0.5) * 2 // ±1% variation
-          const apy = Math.max(0, baseAPY + variation)
-          
+          const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+          const variation = (Math.random() - 0.5) * 2; // ±1% variation
+          const apy = Math.max(0, baseAPY + variation);
+
           history.push({
-            date: date.toISOString().split('T')[0],
+            date: date.toISOString().split("T")[0],
             apy: parseFloat(apy.toFixed(2)),
-            timestamp: date
-          })
+            timestamp: date,
+          });
         }
-        
-        return history
-      }
+
+        return history;
+      };
 
       const baseAPYs = {
         benqi: 5.2,
         traderjoe: 8.7,
-        yieldyak: 12.4
-      }
+        yieldyak: 12.4,
+      };
 
-      const historicalData = generateMockHistory(baseAPYs[protocol as keyof typeof baseAPYs], days)
-      
+      const historicalData = generateMockHistory(
+        baseAPYs[protocol as keyof typeof baseAPYs],
+        days
+      );
+
       const response: ApiResponse = {
         success: true,
         data: {
@@ -197,18 +206,22 @@ export class MarketController {
           period: `${days} days`,
           data: historicalData,
           summary: {
-            averageAPY: (historicalData.reduce((sum, d) => sum + d.apy, 0) / historicalData.length).toFixed(2),
-            minAPY: Math.min(...historicalData.map(d => d.apy)).toFixed(2),
-            maxAPY: Math.max(...historicalData.map(d => d.apy)).toFixed(2),
-            currentAPY: historicalData[historicalData.length - 1].apy.toFixed(2)
-          }
+            averageAPY: (
+              historicalData.reduce((sum, d) => sum + d.apy, 0) /
+              historicalData.length
+            ).toFixed(2),
+            minAPY: Math.min(...historicalData.map((d) => d.apy)).toFixed(2),
+            maxAPY: Math.max(...historicalData.map((d) => d.apy)).toFixed(2),
+            currentAPY:
+              historicalData[historicalData.length - 1].apy.toFixed(2),
+          },
         },
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      };
 
-      res.json(response)
+      res.json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
@@ -217,20 +230,20 @@ export class MarketController {
    */
   async clearCache(req: Request, res: Response, next: NextFunction) {
     try {
-      defiDataService.clearCache()
-      
+      defiDataService.clearCache();
+
       const response: ApiResponse = {
         success: true,
         data: {
-          message: 'Cache cleared successfully',
-          timestamp: new Date()
+          message: "Cache cleared successfully",
+          timestamp: new Date(),
         },
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      };
 
-      res.json(response)
+      res.json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 
@@ -239,22 +252,22 @@ export class MarketController {
    */
   async getCacheStats(req: Request, res: Response, next: NextFunction) {
     try {
-      const stats = defiDataService.getCacheStats()
-      
+      const stats = defiDataService.getCacheStats();
+
       const response: ApiResponse = {
         success: true,
         data: {
           cache: stats,
-          timestamp: new Date()
+          timestamp: new Date(),
         },
-        timestamp: new Date()
-      }
+        timestamp: new Date(),
+      };
 
-      res.json(response)
+      res.json(response);
     } catch (error) {
-      next(error)
+      next(error);
     }
   }
 }
 
-export const marketController = new MarketController()
+export const marketController = new MarketController();

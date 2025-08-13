@@ -234,10 +234,14 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
 
         profile.totalDeposited = 0;
 
+        // Cap withdrawal at contract balance to prevent revert
+        uint256 contractBalance = address(this).balance;
+        uint256 toTransfer = totalWithdrawn > contractBalance ? contractBalance : totalWithdrawn;
+        
         // Transfer withdrawn funds to user
-        if (totalWithdrawn > 0) {
-            payable(msg.sender).transfer(totalWithdrawn);
-            emit Withdrawn(msg.sender, totalWithdrawn);
+        if (toTransfer > 0) {
+            payable(msg.sender).transfer(toTransfer);
+            emit Withdrawn(msg.sender, toTransfer);
         }
     }
 
@@ -258,18 +262,27 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
     }
 
     function _withdrawFromBenqi(uint256 amount) internal returns (uint256) {
-        // TODO: Implement Benqi withdrawal logic
-        return amount; // Placeholder
+        // Mock implementation for hackathon demo
+        // In production, this would interact with Benqi's qiAVAX contract
+        // For demo purposes, we simulate withdrawal with potential yield gains
+        uint256 withdrawnAmount = (amount * (10000 + currentYields.benqiAPY / 365)) / 10000;
+        return withdrawnAmount;
     }
 
     function _withdrawFromTraderJoe(uint256 amount) internal returns (uint256) {
-        // TODO: Implement TraderJoe withdrawal logic
-        return amount; // Placeholder
+        // Mock implementation for hackathon demo
+        // In production, this would interact with TraderJoe's LP contracts
+        // For demo purposes, we simulate withdrawal with potential yield gains
+        uint256 withdrawnAmount = (amount * (10000 + currentYields.traderJoeAPY / 365)) / 10000;
+        return withdrawnAmount;
     }
 
     function _withdrawFromYieldYak(uint256 amount) internal returns (uint256) {
-        // TODO: Implement YieldYak withdrawal logic
-        return amount; // Placeholder
+        // Mock implementation for hackathon demo
+        // In production, this would interact with YieldYak's strategy contracts
+        // For demo purposes, we simulate withdrawal with potential yield gains
+        uint256 withdrawnAmount = (amount * (10000 + currentYields.yieldYakAPY / 365)) / 10000;
+        return withdrawnAmount;
     }
 
     function _calculateOptimalAllocation(uint256 totalAmount, uint8 riskScore) 
@@ -315,11 +328,39 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
         uint256 targetTraderJoe,
         uint256 targetYieldYak
     ) internal {
-        // TODO: Implement actual rebalancing logic
-        // This would involve withdrawing from over-allocated protocols
-        // and depositing to under-allocated protocols
+        // Calculate differences between current and target allocations
+        int256 benqiDiff = int256(targetBenqi) - int256(current.benqiAmount);
+        int256 traderJoeDiff = int256(targetTraderJoe) - int256(current.traderJoeAmount);
+        int256 yieldYakDiff = int256(targetYieldYak) - int256(current.yieldYakAmount);
         
-        // Update allocations
+        uint256 totalWithdrawn = 0;
+        
+        // Step 1: Withdraw from over-allocated protocols
+        if (benqiDiff < 0) {
+            uint256 withdrawAmount = uint256(-benqiDiff);
+            totalWithdrawn += _withdrawFromBenqi(withdrawAmount);
+        }
+        if (traderJoeDiff < 0) {
+            uint256 withdrawAmount = uint256(-traderJoeDiff);
+            totalWithdrawn += _withdrawFromTraderJoe(withdrawAmount);
+        }
+        if (yieldYakDiff < 0) {
+            uint256 withdrawAmount = uint256(-yieldYakDiff);
+            totalWithdrawn += _withdrawFromYieldYak(withdrawAmount);
+        }
+        
+        // Step 2: Deposit to under-allocated protocols
+        if (benqiDiff > 0) {
+            _depositToBenqi(uint256(benqiDiff));
+        }
+        if (traderJoeDiff > 0) {
+            _depositToTraderJoe(uint256(traderJoeDiff));
+        }
+        if (yieldYakDiff > 0) {
+            _depositToYieldYak(uint256(yieldYakDiff));
+        }
+        
+        // Update allocations to reflect new state
         current.benqiAmount = targetBenqi;
         current.traderJoeAmount = targetTraderJoe;
         current.yieldYakAmount = targetYieldYak;

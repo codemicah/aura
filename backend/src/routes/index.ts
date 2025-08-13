@@ -2,6 +2,8 @@ import { Router } from 'express'
 import portfolioRoutes from './portfolio'
 import marketRoutes from './market'
 import aiRoutes from './ai'
+import backtestingRoutes from './backtesting'
+import analyticsRoutes from './analytics'
 
 const router = Router()
 
@@ -48,6 +50,24 @@ router.get('/', (req, res) => {
             'POST /analyze-portfolio - Analyze portfolio performance',
             'GET /health - AI service health check'
           ]
+        },
+        backtesting: {
+          baseUrl: '/api/v1/backtesting',
+          routes: [
+            'POST /run - Run backtesting simulation',
+            'POST /scenarios - Run multiple scenario analysis',
+            'GET /predefined-scenarios - Get predefined test scenarios'
+          ]
+        },
+        analytics: {
+          baseUrl: '/api/v1/analytics',
+          routes: [
+            'GET /metrics/:userId - Get performance metrics',
+            'GET /protocols/:userId - Get protocol-specific performance',
+            'GET /benchmarks/:userId - Get benchmark comparisons',
+            'GET /risk/:userId - Get risk metrics',
+            'GET /dashboard/:userId - Get complete analytics dashboard'
+          ]
         }
       },
       supportedChains: [
@@ -88,5 +108,7 @@ router.get('/', (req, res) => {
 router.use('/portfolio', portfolioRoutes)
 router.use('/market', marketRoutes)
 router.use('/ai', aiRoutes)
+router.use('/backtesting', backtestingRoutes)
+router.use('/analytics', analyticsRoutes)
 
 export default router

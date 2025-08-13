@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import { useAccount } from 'wagmi'
 import { useYieldOptimizer } from '../hooks/useYieldOptimizer'
+import { useAVAXPrice } from '../hooks/useMarketData'
+import { useRiskAssessment } from '../hooks/useAI'
 
 interface PortfolioOverviewProps {
   className?: string
@@ -20,17 +21,8 @@ export function PortfolioOverview({ className = '' }: PortfolioOverviewProps) {
     lastRefreshTime,
     currentBlock
   } = useYieldOptimizer()
-  const [riskProfile, setRiskProfile] = useState<any>(null)
-
-  // Load risk profile from localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('riskProfile')
-      if (stored) {
-        setRiskProfile(JSON.parse(stored))
-      }
-    }
-  }, [])
+  const { price: avaxPrice, isLoading: isPriceLoading } = useAVAXPrice()
+  const { riskScore, riskProfile } = useRiskAssessment()
 
   const getRiskLevelName = (riskScore: number) => {
     if (riskScore <= 33) return 'Conservative'
@@ -46,38 +38,34 @@ export function PortfolioOverview({ className = '' }: PortfolioOverviewProps) {
 
   const formatCurrency = (amount: string | number) => {
     const num = typeof amount === 'string' ? parseFloat(amount) : amount
+    if (!avaxPrice) return '$0.00' // Should never happen due to loading check
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(num * 45.23) // Mock AVAX price of $45.23
+    }).format(num * avaxPrice)
   }
 
   const formatPercentage = (value: number) => {
     return `${value.toFixed(2)}%`
   }
 
-  // Mock data when not connected or no real data
-  const mockData = {
-    totalValue: '12,845.67',
-    totalDeposited: '12,000.00',
-    totalEarnings: '845.67',
-    returnPercentage: '7.05',
-    allocation: {
-      benqi: '40',
-      traderJoe: '40', 
-      yieldYak: '20'
-    },
-    performance: {
-      daily: '+5.2',
-      weekly: '+12.8',
-      monthly: '+28.4',
-      allTime: '+67.2'
-    }
-  }
+  // Component assumes real data is always available or loading
 
-  const displayData = portfolio || mockData
+  // Show loading state while fetching AVAX price
+  if (isPriceLoading || !avaxPrice) {
+    return (
+      <div className={`bg-white rounded-xl shadow-sm border border-gray-100 p-8 ${className}`}>
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="w-8 h-8 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-gray-500">Loading market data...</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   if (!isConnected) {
     return (
@@ -132,18 +120,18 @@ export function PortfolioOverview({ className = '' }: PortfolioOverviewProps) {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="text-sm text-gray-600 mb-1">Total Portfolio Value</div>
           <div className="text-2xl font-bold text-gray-900">
-            {portfolioMetrics ? formatCurrency(portfolioMetrics.totalValue.toString()) : '$12,845.67'}
+            {portfolioMetrics ? formatCurrency(portfolioMetrics.totalValue.toString()) : isLoadingPortfolio ? 'Loading...' : '$0.00'}
           </div>
           <div className="text-sm text-green-600 mt-1">
             {portfolioMetrics && portfolioMetrics.returnPercentage > 0 ? '+' : ''}
-            {portfolioMetrics ? `${portfolioMetrics.returnPercentage.toFixed(2)}%` : '+5.2%'} return
+            {portfolioMetrics ? `${portfolioMetrics.returnPercentage.toFixed(2)}%` : isLoadingPortfolio ? 'Loading...' : '0.00%'} return
           </div>
         </div>
         
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="text-sm text-gray-600 mb-1">Total Deposited</div>
           <div className="text-2xl font-bold text-gray-900">
-            {portfolioMetrics ? formatCurrency(portfolioMetrics.totalDeposited.toString()) : '$12,000.00'}
+            {portfolioMetrics ? formatCurrency(portfolioMetrics.totalDeposited.toString()) : isLoadingPortfolio ? 'Loading...' : '$0.00'}
           </div>
           <div className="text-sm text-gray-500 mt-1">Principal amount</div>
         </div>
@@ -151,16 +139,10 @@ export function PortfolioOverview({ className = '' }: PortfolioOverviewProps) {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="text-sm text-gray-600 mb-1">Total Earnings</div>
           <div className={`text-2xl font-bold ${portfolioMetrics && portfolioMetrics.totalEarnings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {portfolioMetrics 
-              ? formatCurrency(portfolioMetrics.totalEarnings.toString())
-              : '$845.67'
-            }
+            {portfolioMetrics ? formatCurrency(portfolioMetrics.totalEarnings.toString()) : isLoadingPortfolio ? 'Loading...' : '$0.00'}
           </div>
           <div className="text-sm text-gray-500 mt-1">
-            {portfolioMetrics 
-              ? `${portfolioMetrics.returnPercentage.toFixed(2)}% return`
-              : '7.05% return'
-            }
+            {portfolioMetrics ? `${portfolioMetrics.returnPercentage.toFixed(2)}% return` : isLoadingPortfolio ? 'Loading...' : '0.00% return'}
           </div>
         </div>
         
@@ -169,11 +151,11 @@ export function PortfolioOverview({ className = '' }: PortfolioOverviewProps) {
           <div className={`text-2xl font-bold ${portfolio ? getRiskLevelColor(portfolio.profile?.riskScore || 50) : 'text-blue-600'}`}>
             {portfolio 
               ? getRiskLevelName(portfolio.profile?.riskScore || 50)
-              : (riskProfile ? getRiskLevelName(riskProfile.riskScore) : 'Balanced')
+              : (riskProfile || 'Not Set')
             }
           </div>
           <div className="text-sm text-gray-500 mt-1">
-            Score: {portfolio?.profile?.riskScore || riskProfile?.riskScore || 50}/100
+            Score: {portfolio?.profile?.riskScore || riskScore || 0}/100
             {portfolioMetrics && portfolioMetrics.daysSinceLastRebalance >= 0 && (
               <div className="text-xs text-gray-400">
                 Rebalanced {portfolioMetrics.daysSinceLastRebalance}d ago
@@ -207,11 +189,11 @@ export function PortfolioOverview({ className = '' }: PortfolioOverviewProps) {
                 <div className="font-semibold text-gray-900">
                   {portfolio 
                     ? `${formatCurrency(portfolio.allocation.benqiAmount)} (${Math.round((parseFloat(portfolio.allocation.benqiAmount) / parseFloat(portfolio.totalValue)) * 100)}%)`
-                    : '$5,138.27 (40%)'
+                    : '$0.00 (0%)'
                   }
                 </div>
                 <div className="text-sm text-green-600">
-                  {yields ? `${formatPercentage(yields.benqi)}` : '5.2%'} APY
+                  {yields ? `${formatPercentage(yields.benqi)} APY` : 'Loading...'}
                 </div>
               </div>
             </div>
@@ -238,11 +220,11 @@ export function PortfolioOverview({ className = '' }: PortfolioOverviewProps) {
                 <div className="font-semibold text-gray-900">
                   {portfolio 
                     ? `${formatCurrency(portfolio.allocation.traderJoeAmount)} (${Math.round((parseFloat(portfolio.allocation.traderJoeAmount) / parseFloat(portfolio.totalValue)) * 100)}%)`
-                    : '$5,138.27 (40%)'
+                    : '$0.00 (0%)'
                   }
                 </div>
                 <div className="text-sm text-blue-600">
-                  {yields ? `${formatPercentage(yields.traderJoe)}` : '8.7%'} APY
+                  {yields ? `${formatPercentage(yields.traderJoe)} APY` : 'Loading...'}
                 </div>
               </div>
             </div>
@@ -269,11 +251,11 @@ export function PortfolioOverview({ className = '' }: PortfolioOverviewProps) {
                 <div className="font-semibold text-gray-900">
                   {portfolio 
                     ? `${formatCurrency(portfolio.allocation.yieldYakAmount)} (${Math.round((parseFloat(portfolio.allocation.yieldYakAmount) / parseFloat(portfolio.totalValue)) * 100)}%)`
-                    : '$2,569.13 (20%)'
+                    : '$0.00 (0%)'
                   }
                 </div>
                 <div className="text-sm text-purple-600">
-                  {yields ? `${formatPercentage(yields.yieldYak)}` : '12.4%'} APY
+                  {yields ? `${formatPercentage(yields.yieldYak)} APY` : 'Loading...'}
                 </div>
               </div>
             </div>

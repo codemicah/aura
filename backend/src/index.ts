@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
 import express from 'express'
+import swaggerUi from 'swagger-ui-express'
+import YAML from 'yamljs'
+import path from 'path'
 import { config, validateConfig } from './utils/config'
 import { logger } from './utils/logger'
 import { applyCommonMiddleware, errorHandler, notFoundHandler } from './middleware'
@@ -22,6 +25,18 @@ const app = express()
 
 // Apply common middleware
 applyCommonMiddleware(app)
+
+// Load and setup Swagger documentation
+try {
+  const swaggerDocument = YAML.load(path.join(__dirname, '../swagger.yaml'))
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'AURA API Documentation'
+  }))
+  logger.info('Swagger documentation available at /api-docs')
+} catch (error) {
+  logger.error('Failed to load Swagger documentation', error as Error)
+}
 
 // API Routes
 app.use(config.API_BASE_PATH, routes)
@@ -73,7 +88,8 @@ async function startServer() {
 │ Environment: ${config.NODE_ENV.padEnd(47)} │
 │ Server:      http://localhost:${config.PORT.toString().padEnd(37)} │
 │ Health:      http://localhost:${config.PORT}/health${' '.repeat(25)} │
-│ API Docs:    http://localhost:${config.PORT}${config.API_BASE_PATH}${' '.repeat(25)} │
+│ API Docs:    http://localhost:${config.PORT}/api-docs${' '.repeat(23)} │
+│ API Routes:  http://localhost:${config.PORT}${config.API_BASE_PATH}${' '.repeat(25)} │
 │ Database:    ${dbHealth ? '✅ Connected' : '❌ Disconnected'.padEnd(47)} │
 │ Blockchain:  ${Object.values(blockchainHealth).every(h => h) ? '✅ Connected' : '❌ Issues detected'.padEnd(47)} │
 └─────────────────────────────────────────────────────────────────┘

@@ -1,26 +1,44 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from "next/link"
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import ProtectedRoute from '../../src/components/ProtectedRoute'
 import { ConnectButton } from "../../src/components/ConnectButton"
 import { RiskAssessment } from "../../src/components/RiskAssessment"
+import { useAccount } from 'wagmi'
+import { useRiskProfile } from '../../src/hooks/useRiskProfile'
 
-export default function Onboarding() {
+function OnboardingContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const { isConnected } = useAccount()
+  const { hasProfile } = useRiskProfile()
   const [isCompleted, setIsCompleted] = useState(false)
   const [riskProfile, setRiskProfile] = useState<any>(null)
+  
+  // Get redirect URL from query params
+  const redirectTo = searchParams.get('redirect') || '/dashboard'
+
+  // Check if user already has a profile
+  useEffect(() => {
+    if (hasProfile && isConnected) {
+      router.push(redirectTo)
+    }
+  }, [hasProfile, isConnected, redirectTo, router])
 
   const handleRiskAssessmentComplete = (data: any) => {
     setRiskProfile(data)
     setIsCompleted(true)
     
-    // Store in localStorage for now (later we'll use proper state management)
-    localStorage.setItem('riskProfile', JSON.stringify(data))
+    // Set cookie to indicate profile completion
+    document.cookie = `hasRiskProfile=true; path=/; max-age=${60 * 60 * 24 * 30}`
+    
+    // The profile is automatically saved to backend by the useRiskAssessment hook
   }
 
   const handleContinueToDashboard = () => {
-    router.push('/dashboard')
+    router.push(redirectTo)
   }
 
   const getRiskLevelColor = (riskScore: number) => {
@@ -162,5 +180,22 @@ export default function Onboarding() {
         )}
       </main>
     </div>
+  )
+}
+
+export default function Onboarding() {
+  return (
+    <ProtectedRoute>
+      <Suspense fallback={
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading...</p>
+          </div>
+        </div>
+      }>
+        <OnboardingContent />
+      </Suspense>
+    </ProtectedRoute>
   )
 }

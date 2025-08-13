@@ -1,0 +1,830 @@
+openapi: 3.0.0
+info:
+  title: AURA API
+  description: Autonomous AI agent backend for DeFi portfolio optimization on Avalanche
+  version: 1.0.0
+  contact:
+    name: AURA Support
+    email: api@aura-defi.xyz
+    url: https://github.com/aura-defi/api
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3001/api/v1
+    description: Development server
+  - url: https://api.aura-defi.avalanche.network/api/v1
+    description: Production server
+
+tags:
+  - name: Portfolio
+    description: Portfolio management endpoints
+  - name: Market
+    description: Market data and protocol information
+  - name: AI
+    description: AI-powered analytics and recommendations
+  - name: Analytics
+    description: Performance analytics and metrics
+  - name: Backtesting
+    description: Historical simulation and backtesting
+
+paths:
+  /portfolio/{address}:
+    get:
+      tags:
+        - Portfolio
+      summary: Get user portfolio
+      description: Retrieve complete portfolio information for a wallet address
+      parameters:
+        - name: address
+          in: path
+          required: true
+          description: User's wallet address
+          schema:
+            type: string
+            example: "0x1234567890123456789012345678901234567890"
+      responses:
+        '200':
+          description: Portfolio data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PortfolioResponse'
+        '404':
+          description: Portfolio not found
+        '500':
+          description: Internal server error
+
+  /portfolio/{address}/rebalance-recommendation:
+    get:
+      tags:
+        - Portfolio
+      summary: Get rebalance recommendation
+      description: Get AI-powered rebalancing recommendations for portfolio
+      parameters:
+        - name: address
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Rebalance recommendation generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RebalanceRecommendation'
+
+  /portfolio/transaction/{hash}:
+    get:
+      tags:
+        - Portfolio
+      summary: Get transaction status
+      description: Check the status of a blockchain transaction
+      parameters:
+        - name: hash
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "0xabcdef..."
+      responses:
+        '200':
+          description: Transaction status retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionStatus'
+
+  /market/yields:
+    get:
+      tags:
+        - Market
+      summary: Get protocol yields
+      description: Get current APY rates for all integrated protocols
+      responses:
+        '200':
+          description: Protocol yields retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/YieldsResponse'
+
+  /market/avax-price:
+    get:
+      tags:
+        - Market
+      summary: Get AVAX price
+      description: Get current AVAX price in USD
+      responses:
+        '200':
+          description: AVAX price retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriceResponse'
+
+  /market/protocol/{protocol}:
+    get:
+      tags:
+        - Market
+      summary: Get protocol data
+      description: Get detailed information for a specific protocol
+      parameters:
+        - name: protocol
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [benqi, traderjoe, yieldyak]
+      responses:
+        '200':
+          description: Protocol data retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProtocolData'
+
+  /ai/risk-score:
+    post:
+      tags:
+        - AI
+      summary: Calculate risk score
+      description: Calculate risk score based on user's financial profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RiskAssessment'
+      responses:
+        '200':
+          description: Risk score calculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskScoreResponse'
+
+  /ai/allocation:
+    post:
+      tags:
+        - AI
+      summary: Get allocation strategy
+      description: Generate optimal allocation strategy based on risk score
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                riskScore:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                amount:
+                  type: number
+                  minimum: 100
+      responses:
+        '200':
+          description: Allocation strategy generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AllocationStrategy'
+
+  /ai/surplus:
+    post:
+      tags:
+        - AI
+      summary: Calculate investment surplus
+      description: Calculate available investment amount based on financial situation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SurplusCalculation'
+      responses:
+        '200':
+          description: Surplus calculated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SurplusResponse'
+
+  /ai/recommendation:
+    post:
+      tags:
+        - AI
+      summary: Get investment recommendation
+      description: Get personalized investment recommendations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                profile:
+                  type: object
+                  properties:
+                    riskScore:
+                      type: integer
+                    totalDeposited:
+                      type: number
+                portfolio:
+                  type: object
+      responses:
+        '200':
+          description: Recommendation generated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AIRecommendation'
+
+  /analytics/metrics/{userId}:
+    get:
+      tags:
+        - Analytics
+      summary: Get performance metrics
+      description: Get comprehensive performance metrics for a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Performance metrics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PerformanceMetrics'
+
+  /analytics/protocols/{userId}:
+    get:
+      tags:
+        - Analytics
+      summary: Get protocol performance
+      description: Get performance breakdown by protocol
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Protocol performance retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProtocolPerformance'
+
+  /analytics/benchmarks/{userId}:
+    get:
+      tags:
+        - Analytics
+      summary: Get benchmark comparisons
+      description: Compare performance against various benchmarks
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Benchmark comparisons retrieved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BenchmarkComparison'
+
+  /analytics/risk/{userId}:
+    get:
+      tags:
+        - Analytics
+      summary: Get risk metrics
+      description: Get detailed risk analysis metrics
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Risk metrics retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskMetrics'
+
+  /backtesting/run:
+    post:
+      tags:
+        - Backtesting
+      summary: Run backtesting simulation
+      description: Run historical simulation with specified parameters
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BacktestRequest'
+      responses:
+        '200':
+          description: Backtesting completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BacktestResult'
+
+  /backtesting/scenarios:
+    post:
+      tags:
+        - Backtesting
+      summary: Run scenario analysis
+      description: Run multiple market scenario simulations
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                initialAmount:
+                  type: number
+                scenarios:
+                  type: array
+                  items:
+                    type: string
+                    enum: [bull, bear, normal]
+      responses:
+        '200':
+          description: Scenario analysis completed
+
+components:
+  schemas:
+    PortfolioResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            totalValue:
+              type: string
+              example: "42350.50"
+            allocation:
+              type: object
+              properties:
+                benqiAmount:
+                  type: string
+                traderJoeAmount:
+                  type: string
+                yieldYakAmount:
+                  type: string
+                benqiPercentage:
+                  type: number
+                traderJoePercentage:
+                  type: number
+                yieldYakPercentage:
+                  type: number
+            estimatedAPY:
+              type: number
+              example: 11.2
+            lastUpdated:
+              type: string
+              format: date-time
+
+    RebalanceRecommendation:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            currentAllocation:
+              type: object
+            recommendedAllocation:
+              type: object
+            reason:
+              type: string
+            expectedImprovementAPY:
+              type: number
+            confidence:
+              type: number
+
+    TransactionStatus:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            status:
+              type: string
+              enum: [pending, confirmed, failed]
+            blockNumber:
+              type: integer
+            gasUsed:
+              type: string
+            timestamp:
+              type: string
+              format: date-time
+
+    YieldsResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              protocol:
+                type: string
+              apy:
+                type: number
+              tvl:
+                type: string
+              lastUpdated:
+                type: string
+                format: date-time
+
+    PriceResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            price:
+              type: number
+            change24h:
+              type: number
+            lastUpdated:
+              type: string
+              format: date-time
+
+    ProtocolData:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            protocol:
+              type: string
+            apy:
+              type: number
+            tvl:
+              type: string
+            volume24h:
+              type: string
+            fees24h:
+              type: string
+            utilization:
+              type: number
+
+    RiskAssessment:
+      type: object
+      required:
+        - age
+        - income
+        - monthlyExpenses
+        - investmentGoal
+        - riskTolerance
+        - investmentExperience
+        - timeHorizon
+        - liquidityNeed
+      properties:
+        age:
+          type: integer
+          minimum: 18
+          maximum: 100
+        income:
+          type: number
+          minimum: 0
+        monthlyExpenses:
+          type: number
+          minimum: 0
+        investmentGoal:
+          type: string
+          enum: [short_term, medium_term, long_term, retirement]
+        riskTolerance:
+          type: string
+          enum: [very_low, low, medium, high, very_high]
+        investmentExperience:
+          type: string
+          enum: [none, beginner, intermediate, advanced, expert]
+        timeHorizon:
+          type: integer
+          minimum: 1
+          maximum: 50
+        liquidityNeed:
+          type: string
+          enum: [high, medium, low]
+
+    RiskScoreResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            score:
+              type: integer
+              minimum: 0
+              maximum: 100
+            profile:
+              type: string
+              enum: [Conservative, Balanced, Aggressive]
+            confidence:
+              type: number
+              minimum: 0
+              maximum: 1
+
+    AllocationStrategy:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            benqi:
+              type: number
+            traderJoe:
+              type: number
+            yieldYak:
+              type: number
+            rationale:
+              type: string
+            expectedAPY:
+              type: number
+            riskLevel:
+              type: string
+              enum: [low, medium, high]
+
+    SurplusCalculation:
+      type: object
+      required:
+        - income
+        - monthlyExpenses
+        - currentSavings
+        - riskScore
+      properties:
+        income:
+          type: number
+        monthlyExpenses:
+          type: number
+        currentSavings:
+          type: number
+        riskScore:
+          type: integer
+
+    SurplusResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            monthlyIncome:
+              type: number
+            monthlyExpenses:
+              type: number
+            monthlySurplus:
+              type: number
+            emergencyFundTarget:
+              type: number
+            emergencyFundProgress:
+              type: number
+            recommendedMonthlyInvestment:
+              type: number
+            investableAmount:
+              type: number
+
+    AIRecommendation:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            type:
+              type: string
+              enum: [rebalance, deposit, withdraw, yield_opportunity]
+            title:
+              type: string
+            description:
+              type: string
+            confidence:
+              type: number
+            expectedReturn:
+              type: number
+            riskLevel:
+              type: string
+            actionData:
+              type: object
+
+    PerformanceMetrics:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            totalValue:
+              type: number
+            totalDeposited:
+              type: number
+            totalReturn:
+              type: number
+            totalReturnPercentage:
+              type: number
+            dailyReturn:
+              type: number
+            weeklyReturn:
+              type: number
+            monthlyReturn:
+              type: number
+            annualizedReturn:
+              type: number
+            sharpeRatio:
+              type: number
+            maxDrawdown:
+              type: number
+            volatility:
+              type: number
+            winRate:
+              type: number
+
+    ProtocolPerformance:
+      type: object
+      properties:
+        protocol:
+          type: string
+        currentValue:
+          type: number
+        totalDeposited:
+          type: number
+        totalReturn:
+          type: number
+        returnPercentage:
+          type: number
+        currentAPY:
+          type: number
+        allocation:
+          type: number
+        gasFeesSpent:
+          type: number
+
+    BenchmarkComparison:
+      type: object
+      properties:
+        strategy:
+          type: string
+        totalReturn:
+          type: number
+        annualizedReturn:
+          type: number
+        sharpeRatio:
+          type: number
+        maxDrawdown:
+          type: number
+        outperformance:
+          type: number
+
+    RiskMetrics:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            sharpeRatio:
+              type: number
+            sortinoRatio:
+              type: number
+            calmarRatio:
+              type: number
+            valueAtRisk95:
+              type: number
+            maxDrawdown:
+              type: number
+            volatility:
+              type: number
+            beta:
+              type: number
+            alpha:
+              type: number
+
+    BacktestRequest:
+      type: object
+      required:
+        - initialAmount
+        - riskProfile
+        - days
+      properties:
+        initialAmount:
+          type: number
+          minimum: 100
+        riskProfile:
+          type: string
+          enum: [Conservative, Balanced, Aggressive]
+        days:
+          type: integer
+          minimum: 1
+          maximum: 365
+        rebalanceFrequency:
+          type: integer
+          default: 14
+        marketCondition:
+          type: string
+          enum: [bull, bear, normal]
+          default: normal
+
+    BacktestResult:
+      type: object
+      properties:
+        success:
+          type: boolean
+        data:
+          type: object
+          properties:
+            finalValue:
+              type: number
+            totalReturn:
+              type: number
+            returnPercentage:
+              type: number
+            annualizedReturn:
+              type: number
+            sharpeRatio:
+              type: number
+            maxDrawdown:
+              type: number
+            volatility:
+              type: number
+            totalGasCosts:
+              type: number
+            rebalances:
+              type: integer
+
+    ApiError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    
+    WalletSignature:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from wallet signature authentication

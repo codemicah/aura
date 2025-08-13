@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAccount, useBalance } from 'wagmi'
 import { useYieldOptimizer } from '../hooks/useYieldOptimizer'
+import { useRiskAssessment } from '../hooks/useAI'
 import { TransactionStatus } from './TransactionStatus'
 import { useNotificationHelpers } from './NotificationSystem'
 import { CONTRACT_CONSTANTS } from '../config/contracts'
@@ -42,25 +43,23 @@ export function InvestmentForm({ className = '' }: InvestmentFormProps) {
   } = useYieldOptimizer()
 
   const [amount, setAmount] = useState('')
-  const [riskScore, setRiskScore] = useState(50)
   const [showSuccess, setShowSuccess] = useState(false)
+  
+  // Get risk score from server
+  const { riskScore: serverRiskScore } = useRiskAssessment()
+  const riskScore = serverRiskScore || 50 // Default to 50 if no profile set
 
   const { notifySuccess, notifyError, notifyWarning, notifyInfo } = useNotificationHelpers()
-
-  // Load risk profile from localStorage
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem('riskProfile')
-      if (stored) {
-        const profile = JSON.parse(stored)
-        setRiskScore(profile.riskScore)
-      }
-    }
-  }, [])
+  
+  // Track if we've already shown notifications to prevent duplicates
+  const hasNotifiedInvest = useRef(false)
+  const hasNotifiedRebalance = useRef(false)
+  const hasNotifiedWithdraw = useRef(false)
 
   // Handle success states
   useEffect(() => {
-    if (isOptimizeSuccess) {
+    if (isOptimizeSuccess && !hasNotifiedInvest.current) {
+      hasNotifiedInvest.current = true
       setShowSuccess(true)
       setAmount('')
       refetchPortfolio()
@@ -80,27 +79,41 @@ export function InvestmentForm({ className = '' }: InvestmentFormProps) {
       
       return () => clearTimeout(timer)
     }
-  }, [isOptimizeSuccess, refetchPortfolio, notifySuccess])
+    // Reset flag when transaction is no longer successful
+    if (!isOptimizeSuccess) {
+      hasNotifiedInvest.current = false
+    }
+  }, [isOptimizeSuccess])
 
   useEffect(() => {
-    if (isRebalanceSuccess) {
+    if (isRebalanceSuccess && !hasNotifiedRebalance.current) {
+      hasNotifiedRebalance.current = true
       refetchPortfolio()
       notifySuccess(
         'Rebalance Complete!',
         'Your portfolio has been successfully rebalanced for optimal yields.'
       )
     }
-  }, [isRebalanceSuccess, refetchPortfolio, notifySuccess])
+    // Reset flag when transaction is no longer successful
+    if (!isRebalanceSuccess) {
+      hasNotifiedRebalance.current = false
+    }
+  }, [isRebalanceSuccess])
 
   useEffect(() => {
-    if (isWithdrawSuccess) {
+    if (isWithdrawSuccess && !hasNotifiedWithdraw.current) {
+      hasNotifiedWithdraw.current = true
       refetchPortfolio()
       notifySuccess(
         'Withdrawal Complete!',
         'Your funds have been successfully withdrawn from all positions.'
       )
     }
-  }, [isWithdrawSuccess, refetchPortfolio, notifySuccess])
+    // Reset flag when transaction is no longer successful
+    if (!isWithdrawSuccess) {
+      hasNotifiedWithdraw.current = false
+    }
+  }, [isWithdrawSuccess])
 
   const handleInvest = async () => {
     if (!amount || parseFloat(amount) < parseFloat(CONTRACT_CONSTANTS.MIN_DEPOSIT)) {
@@ -274,7 +287,7 @@ export function InvestmentForm({ className = '' }: InvestmentFormProps) {
                 placeholder="0.0"
                 min={CONTRACT_CONSTANTS.MIN_DEPOSIT}
                 step="0.01"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 pr-16"
+                className="w-full px-3 py-2 text-gray-900 bg-white border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 pr-16 placeholder-gray-400"
                 disabled={isOptimizing || isOptimizeConfirming}
               />
               <button
@@ -338,12 +351,40 @@ export function InvestmentForm({ className = '' }: InvestmentFormProps) {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Portfolio Actions</h3>
         
+        {/* Show message if no funds invested */}
+        {(!portfolioMetrics || portfolioMetrics.totalDeposited === 0) ? (
+          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
+            <svg className="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-gray-600 text-sm font-medium mb-1">No Active Investment</p>
+            <p className="text-gray-500 text-xs">Invest funds first to enable portfolio actions</p>
+          </div>
+        ) : (
         <div className="space-y-3">
+          {/* Portfolio Stats */}
+          <div className="bg-gray-50 rounded-lg p-3 mb-3">
+            <div className="flex justify-between items-center text-sm">
+              <span className="text-gray-600">Total Invested:</span>
+              <span className="font-medium text-gray-900">{portfolioMetrics.totalDeposited.toFixed(4)} AVAX</span>
+            </div>
+            <div className="flex justify-between items-center text-sm mt-1">
+              <span className="text-gray-600">Current Value:</span>
+              <span className="font-medium text-gray-900">{portfolioMetrics.totalValue.toFixed(4)} AVAX</span>
+            </div>
+            {portfolioMetrics.daysSinceLastRebalance > 0 && (
+              <div className="text-xs text-gray-500 mt-2">
+                Last rebalanced: {portfolioMetrics.daysSinceLastRebalance} day{portfolioMetrics.daysSinceLastRebalance !== 1 ? 's' : ''} ago
+              </div>
+            )}
+          </div>
+
           {/* Rebalance Button */}
           <button
             onClick={handleRebalance}
-            disabled={isRebalancing || isRebalanceConfirming}
+            disabled={isRebalancing || isRebalanceConfirming || !portfolioMetrics || portfolioMetrics.totalDeposited === 0}
             className="w-full bg-green-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            title={!portfolioMetrics || portfolioMetrics.totalDeposited === 0 ? "Invest funds first to enable rebalancing" : "Rebalance your portfolio to optimal allocations"}
           >
             {isRebalancing || isRebalanceConfirming ? (
               <>
@@ -358,8 +399,9 @@ export function InvestmentForm({ className = '' }: InvestmentFormProps) {
           {/* Emergency Withdraw Button */}
           <button
             onClick={handleWithdraw}
-            disabled={isWithdrawing || isWithdrawConfirming}
+            disabled={isWithdrawing || isWithdrawConfirming || !portfolioMetrics || portfolioMetrics.totalDeposited === 0}
             className="w-full border border-red-300 text-red-700 py-2 px-4 rounded-lg font-medium hover:bg-red-50 transition-colors disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            title={!portfolioMetrics || portfolioMetrics.totalDeposited === 0 ? "No funds to withdraw" : "Withdraw all funds from positions"}
           >
             {isWithdrawing || isWithdrawConfirming ? (
               <>
@@ -378,6 +420,7 @@ export function InvestmentForm({ className = '' }: InvestmentFormProps) {
             </div>
           )}
         </div>
+        )}
         </div>
       </div>
     </>

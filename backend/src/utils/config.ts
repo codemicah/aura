@@ -13,15 +13,15 @@ export const config = {
   // Database
   DATABASE_PATH: process.env.DATABASE_PATH || './data/defi-manager.db',
 
-  // Blockchain Configuration
-  AVALANCHE_RPC_URL: process.env.AVALANCHE_RPC_URL || 'https://api.avax.network/ext/bc/C/rpc',
-  AVALANCHE_FUJI_RPC_URL: process.env.AVALANCHE_FUJI_RPC_URL || 'https://api.avax-test.network/ext/bc/C/rpc',
-  CHAIN_ID: parseInt(process.env.CHAIN_ID || '43114', 10),
-  FUJI_CHAIN_ID: parseInt(process.env.FUJI_CHAIN_ID || '43113', 10),
+  // Network Configuration - Single chain from environment
+  CHAIN_ID: parseInt(process.env.CHAIN_ID || '31337', 10),
+  RPC_URL: process.env.RPC_URL || 'http://localhost:8545',
 
-  // Smart Contract Addresses
-  YIELD_OPTIMIZER_MAINNET: process.env.YIELD_OPTIMIZER_MAINNET || '',
-  YIELD_OPTIMIZER_FUJI: process.env.YIELD_OPTIMIZER_FUJI || '',
+  // Contract Addresses - All from environment variables
+  YIELD_OPTIMIZER_ADDRESS: process.env.YIELD_OPTIMIZER_ADDRESS || '0x0000000000000000000000000000000000000000',
+  TRADERJOE_ROUTER_ADDRESS: process.env.TRADERJOE_ROUTER_ADDRESS || '0x0000000000000000000000000000000000000000',
+  BENQI_COMPTROLLER_ADDRESS: process.env.BENQI_COMPTROLLER_ADDRESS || '0x0000000000000000000000000000000000000000',
+  YIELDYAK_FARM_ADDRESS: process.env.YIELDYAK_FARM_ADDRESS || '0x0000000000000000000000000000000000000000',
 
   // External APIs
   TRADERJOE_API_URL: process.env.TRADERJOE_API_URL || 'https://api.traderjoexyz.com',
@@ -50,44 +50,77 @@ export const config = {
   isTest: process.env.NODE_ENV === 'test',
 } as const
 
-// Chain Configurations
-export const chainConfigs: Record<number, ChainConfig> = {
-  43114: {
-    chainId: 43114,
-    name: 'Avalanche C-Chain',
-    rpcUrl: config.AVALANCHE_RPC_URL,
-    blockExplorer: 'https://snowtrace.io',
-    nativeCurrency: {
-      name: 'Avalanche',
-      symbol: 'AVAX',
-      decimals: 18
-    },
-    contracts: {
-      yieldOptimizer: config.YIELD_OPTIMIZER_MAINNET
-    }
-  },
-  43113: {
-    chainId: 43113,
-    name: 'Avalanche Fuji Testnet',
-    rpcUrl: config.AVALANCHE_FUJI_RPC_URL,
-    blockExplorer: 'https://testnet.snowtrace.io',
-    nativeCurrency: {
-      name: 'Avalanche',
-      symbol: 'AVAX',
-      decimals: 18
-    },
-    contracts: {
-      yieldOptimizer: config.YIELD_OPTIMIZER_FUJI
-    }
+// Chain Configuration - Single chain based on environment
+export const chainConfig: ChainConfig = (() => {
+  const chainId = config.CHAIN_ID
+  
+  switch (chainId) {
+    case 43114:
+      return {
+        chainId: 43114,
+        name: 'Avalanche C-Chain',
+        rpcUrl: config.RPC_URL,
+        blockExplorer: 'https://snowtrace.io',
+        nativeCurrency: {
+          name: 'Avalanche',
+          symbol: 'AVAX',
+          decimals: 18
+        },
+        contracts: {
+          yieldOptimizer: config.YIELD_OPTIMIZER_ADDRESS,
+          traderJoe: config.TRADERJOE_ROUTER_ADDRESS,
+          benqi: config.BENQI_COMPTROLLER_ADDRESS,
+          yieldYak: config.YIELDYAK_FARM_ADDRESS
+        }
+      }
+    case 43113:
+      return {
+        chainId: 43113,
+        name: 'Avalanche Fuji Testnet',
+        rpcUrl: config.RPC_URL,
+        blockExplorer: 'https://testnet.snowtrace.io',
+        nativeCurrency: {
+          name: 'Avalanche',
+          symbol: 'AVAX',
+          decimals: 18
+        },
+        contracts: {
+          yieldOptimizer: config.YIELD_OPTIMIZER_ADDRESS,
+          traderJoe: config.TRADERJOE_ROUTER_ADDRESS,
+          benqi: config.BENQI_COMPTROLLER_ADDRESS,
+          yieldYak: config.YIELDYAK_FARM_ADDRESS
+        }
+      }
+    case 31337:
+    default:
+      // Local Anvil - Note: MetaMask shows "ETH" for chain 31337 (expected behavior)
+      return {
+        chainId: chainId,
+        name: 'Local Anvil',
+        rpcUrl: config.RPC_URL,
+        blockExplorer: '',
+        nativeCurrency: {
+          name: 'AVAX',
+          symbol: 'AVAX',
+          decimals: 18
+        },
+        contracts: {
+          yieldOptimizer: config.YIELD_OPTIMIZER_ADDRESS,
+          traderJoe: config.TRADERJOE_ROUTER_ADDRESS,
+          benqi: config.BENQI_COMPTROLLER_ADDRESS,
+          yieldYak: config.YIELDYAK_FARM_ADDRESS
+        }
+      }
   }
-}
+})()
 
 // Validation
 const requiredEnvVars = [
   'NODE_ENV',
   'PORT',
   'DATABASE_PATH',
-  'AVALANCHE_RPC_URL'
+  'RPC_URL',
+  'CHAIN_ID'
 ]
 
 export const validateConfig = (): void => {
@@ -100,7 +133,7 @@ export const validateConfig = (): void => {
   if (config.isProduction) {
     const prodRequired = [
       'JWT_SECRET',
-      'YIELD_OPTIMIZER_MAINNET'
+      'YIELD_OPTIMIZER_ADDRESS'
     ]
     
     const missingProd = prodRequired.filter(key => !process.env[key] || process.env[key] === 'default-secret-change-in-production')
@@ -111,15 +144,7 @@ export const validateConfig = (): void => {
   }
 }
 
-// Helper functions
-export const getChainConfig = (chainId: number): ChainConfig => {
-  const chain = chainConfigs[chainId]
-  if (!chain) {
-    throw new Error(`Unsupported chain ID: ${chainId}`)
-  }
-  return chain
-}
+// Helper functions - Simplified for single chain
+export const getChainConfig = (): ChainConfig => chainConfig
 
-export const getCurrentChainConfig = (): ChainConfig => {
-  return getChainConfig(config.CHAIN_ID)
-}
+export const getCurrentChainConfig = (): ChainConfig => chainConfig

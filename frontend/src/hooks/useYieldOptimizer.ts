@@ -3,19 +3,21 @@
 import { useState, useEffect } from 'react'
 import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useAccount, useChainId, useBlockNumber } from 'wagmi'
 import { parseEther, formatEther } from 'viem'
-import { YIELD_OPTIMIZER_ABI, getYieldOptimizerAddress } from '../config/contracts'
+import { YIELD_OPTIMIZER_ABI, YIELD_OPTIMIZER_ADDRESS } from '../config/contracts'
 import type { TransactionStep } from '../components/TransactionStatus'
+import { apiClient } from '@/utils/api'
 
 export function useYieldOptimizer() {
   const { address } = useAccount()
   const chainId = useChainId()
-  const contractAddress = getYieldOptimizerAddress(chainId)
+  const contractAddress = YIELD_OPTIMIZER_ADDRESS
   const { data: blockNumber } = useBlockNumber({ watch: true })
 
   // Enhanced transaction state management
   const [transactionSteps, setTransactionSteps] = useState<TransactionStep[]>([])
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false)
   const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date())
+  const [lastTransactionAmount, setLastTransactionAmount] = useState<string>('')
 
   // Read functions
   const { data: userPortfolio, isLoading: isLoadingPortfolio, refetch: refetchPortfolio } = useReadContract({
@@ -55,17 +57,32 @@ export function useYieldOptimizer() {
   const { writeContract: rebalancePortfolio, data: rebalanceHash, error: rebalanceError, isPending: isRebalancing } = useWriteContract()
   const { writeContract: emergencyWithdraw, data: withdrawHash, error: withdrawError, isPending: isWithdrawing } = useWriteContract()
 
-  // Transaction status
+  // Transaction status with timeout handling
   const { isLoading: isOptimizeConfirming, isSuccess: isOptimizeSuccess } = useWaitForTransactionReceipt({
     hash: optimizeHash,
+    confirmations: 1,
+    query: {
+      // Add timeout for local development (15 seconds)
+      staleTime: chainId === 31337 ? 15000 : 60000,
+    }
   })
 
   const { isLoading: isRebalanceConfirming, isSuccess: isRebalanceSuccess } = useWaitForTransactionReceipt({
     hash: rebalanceHash,
+    confirmations: 1,
+    query: {
+      // Add timeout for local development (15 seconds)
+      staleTime: chainId === 31337 ? 15000 : 60000,
+    }
   })
 
   const { isLoading: isWithdrawConfirming, isSuccess: isWithdrawSuccess } = useWaitForTransactionReceipt({
     hash: withdrawHash,
+    confirmations: 1,
+    query: {
+      // Add timeout for local development (15 seconds)
+      staleTime: chainId === 31337 ? 15000 : 60000,
+    }
   })
 
   // Enhanced transaction monitoring
@@ -77,6 +94,24 @@ export function useYieldOptimizer() {
       refetchYields()
     }
   }, [blockNumber, refetchPortfolio, refetchYields])
+
+  // Add timeout handler for transaction modal
+  useEffect(() => {
+    if (isTransactionModalOpen && (rebalanceHash || optimizeHash || withdrawHash)) {
+      const timeout = setTimeout(() => {
+        // Auto-close modal after timeout on local chain
+        if (chainId === 31337 && !isOptimizeSuccess && !isRebalanceSuccess && !isWithdrawSuccess) {
+          setIsTransactionModalOpen(false)
+          // Force refresh portfolio data
+          refetchPortfolio()
+          refetchYields()
+        }
+      }, chainId === 31337 ? 15000 : 60000) // 15s for local, 60s for mainnet
+
+      return () => clearTimeout(timeout)
+    }
+  }, [isTransactionModalOpen, rebalanceHash, optimizeHash, withdrawHash, chainId, 
+      isOptimizeSuccess, isRebalanceSuccess, isWithdrawSuccess, refetchPortfolio, refetchYields])
 
   // Transaction step management
   const initializeTransactionSteps = (type: 'invest' | 'rebalance' | 'withdraw') => {
@@ -125,6 +160,7 @@ export function useYieldOptimizer() {
     
     try {
       initializeTransactionSteps('invest')
+      setLastTransactionAmount(amount) // Store amount for transaction saving
       
       await optimizeYield({
         address: contractAddress,
@@ -233,46 +269,108 @@ export function useYieldOptimizer() {
     }
   }
 
-  // Transaction monitoring effects
+  // Transaction monitoring effects with backend saving
   useEffect(() => {
-    if (optimizeHash) {
+    if (optimizeHash && address) {
       advanceToNextStep('confirm')
       updateTransactionStep('pending', { 
         hash: optimizeHash,
         description: 'Investment transaction is being processed on the blockchain'
       })
+      
+      // Save transaction to backend
+      apiClient.saveTransaction(address, {
+        type: 'deposit',
+        amount: lastTransactionAmount || '0',
+        hash: optimizeHash,
+        status: 'pending'
+      }).catch(err => console.error('Failed to save transaction:', err))
     }
-  }, [optimizeHash])
+  }, [optimizeHash, address])
 
   useEffect(() => {
-    if (rebalanceHash) {
+    if (rebalanceHash && address) {
       advanceToNextStep('confirm')
       updateTransactionStep('pending', { 
         hash: rebalanceHash,
         description: 'Rebalance transaction is being processed on the blockchain'
       })
+      
+      // Save transaction to backend
+      apiClient.saveTransaction(address, {
+        type: 'rebalance',
+        amount: '0',
+        hash: rebalanceHash,
+        status: 'pending'
+      }).catch(err => console.error('Failed to save transaction:', err))
     }
-  }, [rebalanceHash])
+  }, [rebalanceHash, address])
 
   useEffect(() => {
-    if (withdrawHash) {
+    if (withdrawHash && address) {
       advanceToNextStep('confirm')
       updateTransactionStep('pending', { 
         hash: withdrawHash,
         description: 'Withdrawal transaction is being processed on the blockchain'
       })
+      
+      // Save transaction to backend
+      const portfolio = formatPortfolioData()
+      const withdrawAmount = portfolio?.totalValue || '0'
+      apiClient.saveTransaction(address, {
+        type: 'withdraw',
+        amount: withdrawAmount,
+        hash: withdrawHash,
+        status: 'pending'
+      }).catch(err => console.error('Failed to save transaction:', err))
     }
-  }, [withdrawHash])
+  }, [withdrawHash, address])
 
   useEffect(() => {
-    if (isOptimizeSuccess || isRebalanceSuccess || isWithdrawSuccess) {
+    if ((isOptimizeSuccess || isRebalanceSuccess || isWithdrawSuccess) && address) {
+      // First, advance from pending to success (makes success "active")
       advanceToNextStep('pending')
+      
+      // Update transaction status to confirmed in backend
+      if (isOptimizeSuccess && optimizeHash) {
+        apiClient.saveTransaction(address, {
+          type: 'deposit',
+          amount: lastTransactionAmount || '0',
+          hash: optimizeHash,
+          status: 'confirmed'
+        }).catch(err => console.error('Failed to update transaction status:', err))
+      } else if (isRebalanceSuccess && rebalanceHash) {
+        apiClient.saveTransaction(address, {
+          type: 'rebalance',
+          amount: '0',
+          hash: rebalanceHash,
+          status: 'confirmed'
+        }).catch(err => console.error('Failed to update transaction status:', err))
+      } else if (isWithdrawSuccess && withdrawHash) {
+        const portfolio = formatPortfolioData()
+        const withdrawAmount = portfolio?.totalValue || '0'
+        apiClient.saveTransaction(address, {
+          type: 'withdraw',
+          amount: withdrawAmount,
+          hash: withdrawHash,
+          status: 'confirmed'
+        }).catch(err => console.error('Failed to update transaction status:', err))
+      }
+      
+      // Then mark success as completed after a short delay
       setTimeout(() => {
-        refetchPortfolio()
-        refetchYields()
-      }, 1000)
+        updateTransactionStep('success', { status: 'completed' })
+        
+        // Close modal after showing success for 2 seconds
+        setTimeout(() => {
+          setIsTransactionModalOpen(false)
+          // Refresh portfolio data
+          refetchPortfolio()
+          refetchYields()
+        }, 2000)
+      }, 500)
     }
-  }, [isOptimizeSuccess, isRebalanceSuccess, isWithdrawSuccess, refetchPortfolio, refetchYields])
+  }, [isOptimizeSuccess, isRebalanceSuccess, isWithdrawSuccess, address, optimizeHash, rebalanceHash, withdrawHash, lastTransactionAmount])
 
   // Enhanced portfolio metrics
   const getPortfolioMetrics = () => {

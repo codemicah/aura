@@ -11,6 +11,7 @@ import {
 
 // Hook for risk assessment and scoring
 export function useRiskAssessment() {
+  const { address } = useAccount()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [riskScore, setRiskScore] = useState<number | null>(null)
@@ -25,9 +26,18 @@ export function useRiskAssessment() {
       setRiskScore(result.riskScore)
       setRiskProfile(result.riskProfile)
       
-      // Store in localStorage for persistence
-      localStorage.setItem('riskScore', result.riskScore.toString())
-      localStorage.setItem('riskProfile', result.riskProfile)
+      // Save to backend if wallet is connected
+      if (address) {
+        await apiClient.saveUserProfile(address, {
+          riskScore: result.riskScore,
+          riskProfile: result.riskProfile,
+          age: answers.age,
+          income: answers.income,
+          expenses: answers.monthlyExpenses,
+          goals: answers.investmentGoal,
+          riskTolerance: answers.riskTolerance
+        })
+      }
       
       return result
     } catch (err) {
@@ -37,16 +47,31 @@ export function useRiskAssessment() {
     } finally {
       setIsLoading(false)
     }
-  }, [])
+  }, [address])
 
-  // Load from localStorage on mount
+  // Load from backend on mount
   useEffect(() => {
-    const storedScore = localStorage.getItem('riskScore')
-    const storedProfile = localStorage.getItem('riskProfile')
+    const loadProfile = async () => {
+      if (address) {
+        setIsLoading(true)
+        try {
+          // Load from backend only
+          const profile = await apiClient.getUserProfile(address)
+          if (profile) {
+            setRiskScore(profile.riskScore)
+            setRiskProfile(profile.riskProfile)
+          }
+        } catch (err) {
+          console.error('Failed to load profile from backend:', err)
+          setError('Failed to load risk profile')
+        } finally {
+          setIsLoading(false)
+        }
+      }
+    }
     
-    if (storedScore) setRiskScore(parseInt(storedScore))
-    if (storedProfile) setRiskProfile(storedProfile as any)
-  }, [])
+    loadProfile()
+  }, [address])
 
   return {
     riskScore,
@@ -173,9 +198,6 @@ export function useSurplusCalculator() {
       const result = await apiClient.calculateSurplus(data)
       setSurplus(result)
       
-      // Store for later use
-      localStorage.setItem('surplusData', JSON.stringify(result))
-      
       return result
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to calculate surplus'
@@ -186,17 +208,6 @@ export function useSurplusCalculator() {
     }
   }, [])
 
-  // Load from localStorage on mount
-  useEffect(() => {
-    const storedData = localStorage.getItem('surplusData')
-    if (storedData) {
-      try {
-        setSurplus(JSON.parse(storedData))
-      } catch {
-        // Invalid data, ignore
-      }
-    }
-  }, [])
 
   return {
     surplus,

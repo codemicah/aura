@@ -1,36 +1,251 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AURA Frontend - Web Interface
 
-## Getting Started
+Modern web interface for AURA's autonomous DeFi wealth management AI agent.
 
-First, run the development server:
+## 🏗️ Architecture
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```
+app/                    # Next.js app directory
+├── page.tsx                 # Landing page
+├── dashboard/              # Portfolio dashboard
+├── onboarding/            # Risk assessment flow
+├── analytics/             # Performance analytics
+├── education/             # Educational content
+└── layout.tsx             # Root layout
+
+src/
+├── components/          # React components
+│   ├── AnalyticsDashboard.tsx   # Analytics visualization
+│   ├── ConnectButton.tsx        # Wallet connection
+│   ├── Header.tsx               # Navigation header
+│   ├── InvestmentFlow.tsx      # Investment workflow
+│   ├── PerformanceChart.tsx    # Charts and graphs
+│   ├── PortfolioOverview.tsx   # Portfolio summary
+│   ├── RiskAssessment.tsx      # Risk questionnaire
+│   └── Web3Provider.tsx        # Web3 context
+├── hooks/              # Custom React hooks
+│   ├── useAI.ts                # AI agent integration
+│   ├── useMarketData.ts        # Market data fetching
+│   ├── usePortfolio.ts         # Portfolio management
+│   └── useYieldOptimizer.ts    # Smart contract hooks
+├── config/             # Configuration
+│   ├── wagmi.ts               # Wagmi config
+│   ├── contracts.ts           # Contract addresses
+│   └── appkit.ts              # AppKit wallet setup
+├── utils/              # Utilities
+│   └── api.ts                 # API client
+└── types/              # TypeScript types
+
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Quick Start
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+- MetaMask or Web3 wallet
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Installation
 
-## Learn More
+```bash
+# Install dependencies
+npm install
 
-To learn more about Next.js, take a look at the following resources:
+# Set up environment
+cp .env.example .env.local
+# Edit .env.local with your configuration
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Start development server
+npm run dev
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Open browser to http://localhost:3000
+```
 
-## Deploy on Vercel
+## ⚙️ Environment Configuration
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```env
+# AppKit (Reown) - Required for wallet connection
+NEXT_PUBLIC_WC_PROJECT_ID=your_project_id_from_reown
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+# Blockchain
+NEXT_PUBLIC_AVALANCHE_RPC=https://api.avax.network/ext/bc/C/rpc
+NEXT_PUBLIC_YIELD_OPTIMIZER_ADDRESS=0x... # Deploy contract first
+
+# API Backend
+NEXT_PUBLIC_API_URL=http://localhost:3001/api/v1
+
+# App Configuration
+NEXT_PUBLIC_APP_NAME=AURA
+```
+
+## 🎨 Key Features
+
+### Landing Page
+- Modern web3 design with animations
+- Live protocol yields display
+- Demo personas showcase
+- Interactive feature cards
+
+### Risk Assessment
+- Multi-step questionnaire
+- Dynamic risk score calculation
+- Personalized strategy generation
+- Real-time validation
+
+### Dashboard
+- Portfolio overview with current value
+- Allocation breakdown by protocol
+- Performance metrics and charts
+- One-click rebalancing
+
+### Investment Flow
+- Guided deposit process
+- AI-powered allocation recommendations
+- Transaction status tracking
+- Gas estimation
+
+### Analytics
+- Historical performance charts
+- Risk metrics (Sharpe ratio, drawdown)
+- Benchmark comparisons
+- Protocol-specific analytics
+
+### Education
+- Interactive tutorials
+- DeFi glossary
+- Protocol guides
+- FAQ section
+
+## 🔗 Web3 Integration
+
+### Wagmi Configuration
+```typescript
+// Supported chains
+- Avalanche C-Chain (43114)
+- Avalanche Fuji (43113)
+
+// Wallet connectors
+- MetaMask
+- WalletConnect
+- Coinbase Wallet
+- Injected wallets
+```
+
+### Smart Contract Hooks
+- `useYieldOptimizer` - Main contract interaction
+- `usePortfolio` - Portfolio data fetching
+- `useRebalance` - Rebalancing operations
+- `useWithdraw` - Withdrawal management
+
+## 🎯 Custom Hooks
+
+### useAI
+```typescript
+// AI agent integration
+const { riskScore, allocation, recommendations } = useAI()
+```
+
+### useMarketData
+```typescript
+// Real-time market data
+const { yields, avaxPrice, protocolData } = useMarketData()
+```
+
+### usePortfolio
+```typescript
+// Portfolio management
+const { portfolio, performance, history } = usePortfolio(address)
+```
+
+## 🎨 UI Components
+
+### Core Components
+- **ConnectButton** - Wallet connection with network switching
+- **RiskAssessment** - Interactive risk questionnaire
+- **PortfolioOverview** - Real-time portfolio display
+- **InvestmentFlow** - Step-by-step investment process
+- **PerformanceChart** - Interactive performance visualization
+
+### Layout Components
+- **Header** - Navigation and wallet status
+- **MobileNav** - Responsive mobile navigation
+- **SkeletonLoaders** - Loading states
+- **ErrorBoundary** - Error handling
+
+## 📊 State Management
+
+- **React Context** - Global app state
+- **TanStack Query** - Server state and caching
+- **wagmi** - Web3 state management
+- **localStorage** - User preferences persistence
+
+## 🎨 Styling
+
+- **Tailwind CSS v4** - Utility-first styling
+- **CSS Modules** - Component-specific styles
+- **Responsive Design** - Mobile-first approach
+- **Dark Mode** - Native dark theme
+
+## 📝 Scripts
+
+```bash
+npm run dev         # Development server
+npm run build       # Production build
+npm run start       # Production server
+npm run lint        # ESLint checking
+npm run type-check  # TypeScript validation
+```
+
+## 🧪 Demo Mode
+
+Three demo personas available for testing:
+
+| Persona | Risk Level | Allocation |
+|---------|------------|------------|
+| Sarah | Conservative | 70% Benqi, 30% TraderJoe |
+| Mike | Balanced | 40% Benqi, 40% TraderJoe, 20% YieldYak |
+| Jennifer | Aggressive | 20% Benqi, 30% TraderJoe, 50% YieldYak |
+
+## 🚨 Troubleshooting
+
+**Wallet connection issues**
+- Ensure NEXT_PUBLIC_WC_PROJECT_ID is set
+- Check wallet is on Avalanche network
+- Clear browser cache and retry
+
+**Contract interaction errors**
+- Verify contract is deployed
+- Check NEXT_PUBLIC_YIELD_OPTIMIZER_ADDRESS
+- Ensure sufficient AVAX for gas
+
+**API connection failed**
+- Verify backend is running on port 3001
+- Check NEXT_PUBLIC_API_URL setting
+- Confirm CORS is configured
+
+## 📱 Browser Support
+
+- Chrome 90+
+- Firefox 88+
+- Safari 14+
+- Edge 90+
+- Mobile browsers with Web3 support
+
+## 🔧 Performance
+
+- **Next.js 15** - App router with RSC
+- **React 19** - Latest React features
+- **Code splitting** - Automatic route-based splitting
+- **Image optimization** - Next/Image component
+- **Font optimization** - Next/Font with Geist
+
+## 📋 Requirements
+
+- **Node.js**: 18+
+- **Browser**: Web3-enabled
+- **Wallet**: MetaMask or compatible
+- **Backend**: AURA backend API running
+
+---
+
+*AURA Frontend - Autonomous DeFi Management Interface*

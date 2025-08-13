@@ -1,8 +1,8 @@
-import { Router } from 'express'
-import { portfolioController } from '../controllers/portfolioController'
-import { validateEthereumAddress } from '../middleware'
+import { Router } from "express";
+import { portfolioController } from "../controllers/portfolioController";
+import { validateEthereumAddress } from "../middleware";
 
-const router = Router()
+const router = Router();
 
 /**
  * @route   GET /api/v1/portfolio/:address
@@ -12,10 +12,10 @@ const router = Router()
  * @query   chainId - Blockchain chain ID (optional, defaults to 43114)
  */
 router.get(
-  '/:address',
-  validateEthereumAddress('address'),
+  "/:address",
+  validateEthereumAddress("address"),
   portfolioController.getUserPortfolio
-)
+);
 
 /**
  * @route   GET /api/v1/portfolio/:address/balance
@@ -25,10 +25,10 @@ router.get(
  * @query   chainId - Blockchain chain ID (optional, defaults to 43114)
  */
 router.get(
-  '/:address/balance',
-  validateEthereumAddress('address'),
+  "/:address/balance",
+  validateEthereumAddress("address"),
   portfolioController.getUserBalance
-)
+);
 
 /**
  * @route   GET /api/v1/portfolio/:address/rebalance-recommendation
@@ -38,10 +38,74 @@ router.get(
  * @query   chainId - Blockchain chain ID (optional, defaults to 43114)
  */
 router.get(
-  '/:address/rebalance-recommendation',
-  validateEthereumAddress('address'),
+  "/:address/rebalance-recommendation",
+  validateEthereumAddress("address"),
   portfolioController.getRebalanceRecommendation
-)
+);
+
+/**
+ * @route   GET /api/v1/portfolio/:address/transactions
+ * @desc    Get user transaction history
+ * @access  Public
+ * @param   address - Ethereum wallet address
+ * @query   limit - Number of transactions to return (optional, defaults to 50)
+ */
+router.get(
+  "/:address/transactions",
+  validateEthereumAddress("address"),
+  portfolioController.getUserTransactions
+);
+
+/**
+ * @route   POST /api/v1/portfolio/:address/transactions
+ * @desc    Save a new transaction
+ * @access  Public
+ * @param   address - Ethereum wallet address
+ * @body    type, amount, hash, status
+ */
+router.post(
+  "/:address/transactions",
+  validateEthereumAddress("address"),
+  portfolioController.saveTransaction
+);
+
+/**
+ * @route   GET /api/v1/portfolio/:address/history
+ * @desc    Get portfolio history snapshots
+ * @access  Public
+ * @param   address - Ethereum wallet address
+ * @query   days - Number of days to fetch (optional, defaults to 30)
+ */
+router.get(
+  "/:address/history",
+  validateEthereumAddress("address"),
+  portfolioController.getPortfolioHistory
+);
+
+/**
+ * @route   GET /api/v1/portfolio/:address/profile
+ * @desc    Get user risk profile
+ * @access  Public
+ * @param   address - Ethereum wallet address
+ */
+router.get(
+  "/:address/profile",
+  validateEthereumAddress("address"),
+  portfolioController.getUserProfile
+);
+
+/**
+ * @route   POST /api/v1/portfolio/:address/profile
+ * @desc    Save or update user risk profile
+ * @access  Public
+ * @param   address - Ethereum wallet address
+ * @body    riskScore, riskProfile, preferences
+ */
+router.post(
+  "/:address/profile",
+  validateEthereumAddress("address"),
+  portfolioController.saveUserProfile
+);
 
 /**
  * @route   GET /api/v1/portfolio/transaction/:hash
@@ -50,10 +114,7 @@ router.get(
  * @param   hash - Transaction hash
  * @query   chainId - Blockchain chain ID (optional, defaults to 43114)
  */
-router.get(
-  '/transaction/:hash',
-  portfolioController.getTransactionStatus
-)
+router.get("/transaction/:hash", portfolioController.getTransactionStatus);
 
 /**
  * @route   GET /api/v1/portfolio/gas-price
@@ -61,19 +122,13 @@ router.get(
  * @access  Public
  * @query   chainId - Blockchain chain ID (optional, defaults to 43114)
  */
-router.get(
-  '/gas-price',
-  portfolioController.getGasPrice
-)
+router.get("/gas-price", portfolioController.getGasPrice);
 
 /**
  * @route   GET /api/v1/portfolio/health
  * @desc    Health check for blockchain and DeFi services
  * @access  Public
  */
-router.get(
-  '/health',
-  portfolioController.healthCheck
-)
+router.get("/health", portfolioController.healthCheck);
 
-export default router
+export default router;

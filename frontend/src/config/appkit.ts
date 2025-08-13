@@ -2,17 +2,52 @@ import { createAppKit } from '@reown/appkit/react'
 import { avalanche, avalancheFuji } from '@reown/appkit/networks'
 import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
 import { cookieStorage, createStorage } from 'wagmi'
+import { defineChain } from 'viem'
 
-// Get project ID from environment
+// Get project ID and RPC URLs from environment
 const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID || ''
+const localRpc = process.env.NEXT_PUBLIC_LOCAL_RPC || 'http://127.0.0.1:8545'
 
 if (!projectId) {
   console.warn('NEXT_PUBLIC_WC_PROJECT_ID is not set. Using placeholder for development.')
 }
 
+// Define local Avalanche network for AppKit
+const avalancheLocal = defineChain({
+  id: 31337,
+  name: 'Avalanche Local',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'AVAX',
+    symbol: 'AVAX',
+  },
+  rpcUrls: {
+    default: {
+      http: [localRpc],
+    },
+  },
+  blockExplorers: {
+    default: { 
+      name: 'Local Explorer', 
+      url: 'http://localhost:8545' 
+    },
+  },
+  testnet: true,
+})
+
+// Get chain ID from environment
+const chainId = parseInt(process.env.NEXT_PUBLIC_CHAIN_ID || '31337')
+
+// Networks array - only include the configured network
+const networks: any[] = chainId === 31337 
+  ? [avalancheLocal] // Only local network when on localhost
+  : chainId === 43113
+  ? [avalancheFuji] // Only Fuji testnet
+  : [avalanche] // Only mainnet
+
 // Create wagmi adapter for AppKit
 const wagmiAdapter = new WagmiAdapter({
-  networks: [avalanche, avalancheFuji],
+  networks: networks as any,
   projectId,
   ssr: true, // Enable server-side rendering support
   storage: createStorage({
@@ -22,16 +57,16 @@ const wagmiAdapter = new WagmiAdapter({
 
 // App metadata
 const metadata = {
-  name: 'Personal DeFi Wealth Manager',
-  description: 'AI-powered financial advisor that optimizes yields across Avalanche DeFi protocols',
-  url: typeof window !== 'undefined' ? window.location.origin : 'https://personal-defi-manager.vercel.app',
-  icons: ['/logo.png'],
+  name: 'AURA',
+  description: 'Autonomous AI agent that revolutionizes DeFi wealth management',
+  url: typeof window !== 'undefined' ? window.location.origin : 'https://aura-defi.vercel.app',
+  icons: ['/aura-icon.svg'],
 }
 
 // Create AppKit instance
 export const modal = createAppKit({
   adapters: [wagmiAdapter],
-  networks: [avalanche, avalancheFuji],
+  networks: networks as any,
   projectId,
   metadata,
   
@@ -44,7 +79,7 @@ export const modal = createAppKit({
   },
   
   // Theme configuration
-  themeMode: 'light',
+  themeMode: 'dark', // Changed to dark for better visibility
   themeVariables: {
     '--w3m-accent': '#2563eb', // Blue accent color
     '--w3m-border-radius-master': '12px',
@@ -56,8 +91,12 @@ export const modal = createAppKit({
     'fd20dc426fb37566d803205b19bbc1d4096b248ac04548e3cfb6b3a38bd033aa', // Coinbase
   ],
   
-  // Default network
-  defaultNetwork: process.env.NODE_ENV === 'production' ? avalanche : avalancheFuji,
+  // Default network - use the configured network
+  defaultNetwork: chainId === 31337 
+    ? avalancheLocal as any
+    : chainId === 43113
+    ? avalancheFuji
+    : avalanche,
 })
 
 // Export wagmi config from the adapter

@@ -1,6 +1,36 @@
 // API Client for Backend Integration
 import { RiskAssessmentAnswers, AllocationStrategy } from '@/types/ai'
-import { Portfolio, MarketData, Transaction } from '@/types'
+
+// Type definitions
+export interface Portfolio {
+  totalValue: string
+  allocation: any
+  estimatedAPY: number
+  lastUpdated: Date
+  performance: any
+}
+
+export interface MarketData {
+  protocol: string
+  apy: number
+  tvl: string
+  volume24h: string
+  fees24h: string
+  utilization: number
+  timestamp: Date
+}
+
+export interface Transaction {
+  id: string
+  type: 'deposit' | 'withdraw' | 'rebalance'
+  amount: string
+  hash: string
+  status: 'pending' | 'confirmed' | 'failed'
+  gasUsed?: string
+  gasPrice?: string
+  blockNumber?: number
+  timestamp: Date
+}
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1'
 
@@ -151,7 +181,56 @@ class APIClient {
     address: string,
     limit: number = 50
   ): Promise<Transaction[]> {
-    return this.request(`/portfolio/${address}/transactions?limit=${limit}`)
+    const response = await this.request<{ transactions: Transaction[] }>(
+      `/portfolio/${address}/transactions?limit=${limit}`
+    )
+    return response.transactions || []
+  }
+
+  async saveTransaction(
+    address: string,
+    transaction: {
+      type: 'deposit' | 'withdraw' | 'rebalance'
+      amount: string
+      hash: string
+      status?: 'pending' | 'confirmed' | 'failed'
+      gasUsed?: string
+      gasPrice?: string
+      blockNumber?: number
+    }
+  ): Promise<any> {
+    return this.request(`/portfolio/${address}/transactions`, {
+      method: 'POST',
+      body: JSON.stringify(transaction),
+    })
+  }
+
+  async getUserProfile(address: string): Promise<{
+    riskScore: number
+    riskProfile: 'Conservative' | 'Balanced' | 'Aggressive'
+    preferences?: any
+  } | null> {
+    const response = await this.request<any>(`/portfolio/${address}/profile`)
+    return response.message ? null : response
+  }
+
+  async saveUserProfile(
+    address: string,
+    data: {
+      riskScore: number
+      riskProfile: 'Conservative' | 'Balanced' | 'Aggressive'
+      age?: number
+      income?: number
+      expenses?: number
+      goals?: string
+      riskTolerance?: string
+      preferences?: any
+    }
+  ): Promise<any> {
+    return this.request(`/portfolio/${address}/profile`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
   }
 
   // Market Data Endpoints

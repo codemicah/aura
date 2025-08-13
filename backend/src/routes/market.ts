@@ -1,7 +1,7 @@
-import { Router } from 'express'
-import { marketController } from '../controllers/marketController'
+import { Router } from "express";
+import { marketController } from "../controllers/marketController";
 
-const router = Router()
+const router = Router();
 
 /**
  * @route   GET /api/v1/market/yields
@@ -9,30 +9,28 @@ const router = Router()
  * @access  Public
  * @query   chainId - Blockchain chain ID (optional, defaults to 43114)
  */
-router.get(
-  '/yields',
-  marketController.getCurrentYields
-)
+router.get("/yields", marketController.getCurrentYields);
 
 /**
  * @route   GET /api/v1/market/data
  * @desc    Get comprehensive market data for all protocols
  * @access  Public
  */
-router.get(
-  '/data',
-  marketController.getMarketData
-)
+router.get("/data", marketController.getMarketData);
+
+/**
+ * @route   GET /api/v1/market/summary
+ * @desc    Get market summary (alias for /data)
+ * @access  Public
+ */
+router.get("/summary", marketController.getMarketData);
 
 /**
  * @route   GET /api/v1/market/avax-price
  * @desc    Get current AVAX price in USD
  * @access  Public
  */
-router.get(
-  '/avax-price',
-  marketController.getAVAXPrice
-)
+router.get("/avax-price", marketController.getAVAXPrice);
 
 /**
  * @route   GET /api/v1/market/protocol/:protocol
@@ -40,10 +38,7 @@ router.get(
  * @access  Public
  * @param   protocol - Protocol name (benqi, traderjoe, yieldyak)
  */
-router.get(
-  '/protocol/:protocol',
-  marketController.getProtocolData
-)
+router.get("/protocol/:protocol", marketController.getProtocolData);
 
 /**
  * @route   GET /api/v1/market/protocol/:protocol/history
@@ -52,29 +47,20 @@ router.get(
  * @param   protocol - Protocol name (benqi, traderjoe, yieldyak)
  * @query   days - Number of days of history (optional, defaults to 30)
  */
-router.get(
-  '/protocol/:protocol/history',
-  marketController.getHistoricalYields
-)
+router.get("/protocol/:protocol/history", marketController.getHistoricalYields);
 
 /**
  * @route   DELETE /api/v1/market/cache
  * @desc    Clear market data cache for fresh data
  * @access  Public (in production, this might require authentication)
  */
-router.delete(
-  '/cache',
-  marketController.clearCache
-)
+router.delete("/cache", marketController.clearCache);
 
 /**
  * @route   GET /api/v1/market/cache/stats
  * @desc    Get cache statistics
  * @access  Public
  */
-router.get(
-  '/cache/stats',
-  marketController.getCacheStats
-)
+router.get("/cache/stats", marketController.getCacheStats);
 
-export default router
+export default router;

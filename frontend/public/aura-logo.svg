@@ -1,0 +1,131 @@
+<svg width="240" height="60" viewBox="0 0 240 60" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradient for the orbital rings -->
+    <linearGradient id="auraGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8B5CF6;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3B82F6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#06B6D4;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Glow effect -->
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    
+    <!-- Inner glow for the core -->
+    <radialGradient id="coreGradient" cx="50%" cy="50%">
+      <stop offset="0%" style="stop-color:#06B6D4;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#3B82F6;stop-opacity:0.8" />
+      <stop offset="100%" style="stop-color:#8B5CF6;stop-opacity:0.3" />
+    </radialGradient>
+  </defs>
+  
+  <!-- Logo Icon - Orbital AI System -->
+  <g transform="translate(30, 30)">
+    <!-- Outer orbital ring -->
+    <ellipse cx="0" cy="0" rx="25" ry="10" 
+             fill="none" 
+             stroke="url(#auraGradient)" 
+             stroke-width="1.5" 
+             opacity="0.8"
+             transform="rotate(-20)">
+      <animateTransform attributeName="transform" 
+                        type="rotate" 
+                        from="0 0 0" 
+                        to="360 0 0" 
+                        dur="20s" 
+                        repeatCount="indefinite"/>
+    </ellipse>
+    
+    <!-- Middle orbital ring -->
+    <ellipse cx="0" cy="0" rx="18" ry="7" 
+             fill="none" 
+             stroke="url(#auraGradient)" 
+             stroke-width="1.5" 
+             opacity="0.9"
+             transform="rotate(45)">
+      <animateTransform attributeName="transform" 
+                        type="rotate" 
+                        from="360 0 0" 
+                        to="0 0 0" 
+                        dur="15s" 
+                        repeatCount="indefinite"/>
+    </ellipse>
+    
+    <!-- Inner orbital ring -->
+    <ellipse cx="0" cy="0" rx="12" ry="5" 
+             fill="none" 
+             stroke="url(#auraGradient)" 
+             stroke-width="1.5" 
+             opacity="1"
+             transform="rotate(-60)">
+      <animateTransform attributeName="transform" 
+                        type="rotate" 
+                        from="0 0 0" 
+                        to="360 0 0" 
+                        dur="10s" 
+                        repeatCount="indefinite"/>
+    </ellipse>
+    
+    <!-- Central AI core -->
+    <circle cx="0" cy="0" r="6" 
+            fill="url(#coreGradient)" 
+            filter="url(#glow)">
+      <animate attributeName="r" 
+               values="6;7;6" 
+               dur="2s" 
+               repeatCount="indefinite"/>
+    </circle>
+    
+    <!-- Orbital nodes -->
+    <circle cx="25" cy="0" r="2" fill="#06B6D4" opacity="0.9">
+      <animateTransform attributeName="transform" 
+                        type="rotate" 
+                        from="0 0 0" 
+                        to="360 0 0" 
+                        dur="20s" 
+                        repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="-18" cy="0" r="2" fill="#3B82F6" opacity="0.9">
+      <animateTransform attributeName="transform" 
+                        type="rotate" 
+                        from="360 0 0" 
+                        to="0 0 0" 
+                        dur="15s" 
+                        repeatCount="indefinite"/>
+    </circle>
+    
+    <circle cx="0" cy="12" r="2" fill="#8B5CF6" opacity="0.9">
+      <animateTransform attributeName="transform" 
+                        type="rotate" 
+                        from="0 0 0" 
+                        to="360 0 0" 
+                        dur="10s" 
+                        repeatCount="indefinite"/>
+    </circle>
+  </g>
+  
+  <!-- Text: AURA -->
+  <text x="75" y="38" 
+        font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif" 
+        font-size="28" 
+        font-weight="600" 
+        fill="url(#auraGradient)">
+    AURA
+  </text>
+  
+  <!-- Tagline -->
+  <text x="75" y="50" 
+        font-family="'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif" 
+        font-size="9" 
+        font-weight="400" 
+        fill="#94A3B8"
+        letter-spacing="0.5">
+    AUTONOMOUS DEFI AGENT
+  </text>
+</svg>
