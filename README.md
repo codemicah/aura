@@ -29,6 +29,7 @@ AURA is an autonomous AI agent designed to manage and optimize DeFi portfolios w
 ### 🎯 The Problem We Solve
 
 Traditional DeFi investing is complex, time-consuming, and risky. Users face:
+
 - **Technical barriers** - Understanding protocols, gas fees, slippage
 - **24/7 monitoring** - Markets never sleep, but humans need to
 - **Decision paralysis** - Too many protocols, strategies, and risks
@@ -63,21 +64,27 @@ AURA eliminates these challenges through autonomous AI agency, making DeFi acces
 ## ⚡ Core Capabilities
 
 ### Autonomous Decision Making
+
 AURA operates independently, making thousands of micro-decisions daily:
+
 - **Portfolio Allocation** - Distributes funds across protocols based on risk/reward
 - **Rebalancing Triggers** - Detects drift and market opportunities
 - **Risk Management** - Adjusts exposure based on volatility
 - **Gas Optimization** - Times transactions for minimal costs
 
 ### Continuous Learning
+
 The agent improves over time through:
+
 - **Pattern Recognition** - Identifies profitable market conditions
 - **User Behavior Analysis** - Learns individual preferences
 - **Strategy Evolution** - Adapts to changing market dynamics
 - **Performance Feedback** - Refines decisions based on outcomes
 
 ### Self-Executing Actions
+
 No human intervention required:
+
 - **Automatic Deposits** - Allocates new funds immediately
 - **Smart Rebalancing** - Executes when thresholds are met
 - **Emergency Withdrawals** - Protects funds during market crashes
@@ -86,6 +93,7 @@ No human intervention required:
 ## 📊 Performance Metrics
 
 ### AI Agent Statistics
+
 - **Decision Accuracy**: 99.9% success rate
 - **Response Time**: <100ms per decision
 - **Learning Rate**: 15% improvement per week
@@ -93,11 +101,12 @@ No human intervention required:
 - **Uptime**: 99.99% availability
 
 ### Portfolio Returns
+
 | Risk Profile | Annual Return | Sharpe Ratio | vs Traditional DeFi |
-|-------------|--------------|--------------|-------------------|
-| Conservative | 7.5% | 1.85 | +2.3% |
-| Balanced | 11.2% | 1.65 | +3.8% |
-| Aggressive | 15.8% | 1.45 | +5.2% |
+| ------------ | ------------- | ------------ | ------------------- |
+| Conservative | 7.5%          | 1.85         | +2.3%               |
+| Balanced     | 11.2%         | 1.65         | +3.8%               |
+| Aggressive   | 15.8%         | 1.45         | +5.2%               |
 
 ## 🚀 Quick Start
 
@@ -116,6 +125,7 @@ cd aura-defi-agent
 ```
 
 For detailed setup instructions:
+
 - [Backend Setup](backend/README.md) - AI agent and API configuration
 - [Frontend Setup](frontend/README.md) - Web interface installation
 - [Smart Contracts](contracts/README.md) - Contract deployment guide
@@ -175,97 +185,49 @@ AURA seamlessly manages funds across:
 ## 🎓 How AURA Works
 
 ### 1. Onboarding (5 minutes)
+
 - Complete risk assessment questionnaire
 - Connect your wallet
 - Deposit funds
 
 ### 2. AI Analysis (Instant)
+
 - AURA analyzes your profile
 - Evaluates market conditions
 - Generates optimal strategy
 
 ### 3. Autonomous Management (24/7)
+
 - Monitors protocols continuously
 - Executes rebalancing automatically
 - Optimizes yields in real-time
 
 ### 4. Learning & Improvement (Ongoing)
+
 - Tracks performance metrics
 - Learns from your preferences
 - Evolves strategies over time
 
-## 📊 Live Dashboard
-
-Experience AURA in action with our demo accounts:
-
-### Demo Personas
-Try AURA with pre-configured personas to see how the AI agent adapts to different risk profiles:
-
-| Persona | Risk Profile | Strategy Focus | Annual Return |
-|---------|-------------|----------------|---------------|
-| **Sarah Thompson** | Conservative (28/100) | Capital Preservation | 7.5% APY |
-| **Mike Chen** | Balanced (52/100) | Steady Growth | 11.2% APY |
-| **Jennifer Rodriguez** | Aggressive (78/100) | Maximum Yield | 15.8% APY |
-
-Each demo showcases how AURA's AI agent:
-- Allocates funds differently based on risk tolerance
-- Makes autonomous rebalancing decisions
-- Adapts to market conditions in real-time
-- Learns from user behavior patterns
-
-## 🗺️ Roadmap
-
-### Phase 1 - Foundation ✅
-- Core AI agent
-- Three protocol integration
-- Risk assessment engine
-- Web interface
-
-### Phase 2 - Enhancement (Q1 2025)
-- Mobile app
-- Additional protocols
-- Social features
-- Advanced strategies
-
-### Phase 3 - Expansion (Q2 2025)
-- Multi-chain support
-- Institutional features
-- DAO governance
-- Strategy marketplace
-
 ## 🏆 Why Choose AURA?
 
 ### For Individual Investors
+
 - **Set and Forget** - No need to monitor markets 24/7
 - **Professional Management** - AI makes expert-level decisions
 - **Risk Protection** - Built-in safeguards prevent losses
 - **Maximum Returns** - Optimized yields across protocols
 
 ### For the DeFi Ecosystem
+
 - **Increased Adoption** - Makes DeFi accessible to everyone
 - **Capital Efficiency** - Optimal allocation across protocols
 - **Innovation Driver** - Pushes boundaries of autonomous finance
-- **Open Source** - Contributes to community knowledge
-
-## 📄 License
-
-AURA is open source under the MIT License. See [LICENSE](LICENSE) for details.
-
-## 🙏 Acknowledgments
-
-Special thanks to:
-- Avalanche ecosystem for robust infrastructure
-- Benqi, TraderJoe, and YieldYak teams
-- OpenZeppelin for security libraries
-- The DeFi and AI research communities
-
----
 
 <div align="center">
 
 **AURA - Where AI Meets DeFi**
 
-*Building the future of autonomous wealth management*
+_Building the future of autonomous wealth management_
 
 </div>
 
