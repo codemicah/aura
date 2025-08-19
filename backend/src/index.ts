@@ -1,66 +1,74 @@
 #!/usr/bin/env node
 
-import express from 'express'
-import swaggerUi from 'swagger-ui-express'
-import YAML from 'yamljs'
-import path from 'path'
-import { config, validateConfig } from './utils/config'
-import { logger } from './utils/logger'
-import { applyCommonMiddleware, errorHandler, notFoundHandler } from './middleware'
-import routes from './routes'
-import { databaseService } from './services/database'
-import { blockchainService } from './services/blockchain'
-import { defiDataService } from './services/defi'
+import express from "express";
+import swaggerUi from "swagger-ui-express";
+import YAML from "yamljs";
+import path from "path";
+import { config, validateConfig } from "./utils/config";
+import { logger } from "./utils/logger";
+import {
+  applyCommonMiddleware,
+  errorHandler,
+  notFoundHandler,
+} from "./middleware";
+import routes from "./routes";
+import { databaseService } from "./services/database";
+import { blockchainService } from "./services/blockchain";
+import { defiDataService } from "./services/defi";
 
 // Validate configuration before starting
 try {
-  validateConfig()
+  validateConfig();
 } catch (error) {
-  console.error('Configuration validation failed:', error)
-  process.exit(1)
+  console.error("Configuration validation failed:", error);
+  process.exit(1);
 }
 
 // Create Express application
-const app = express()
+const app = express();
 
 // Apply common middleware
-applyCommonMiddleware(app)
+applyCommonMiddleware(app);
 
 // Load and setup Swagger documentation
 try {
-  const swaggerDocument = YAML.load(path.join(__dirname, '../swagger.yaml'))
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument, {
-    customCss: '.swagger-ui .topbar { display: none }',
-    customSiteTitle: 'AURA API Documentation'
-  }))
-  logger.info('Swagger documentation available at /api-docs')
+  const swaggerDocument = YAML.load(path.join(__dirname, "../swagger.yaml"));
+  app.use(
+    "/api-docs",
+    swaggerUi.serve,
+    swaggerUi.setup(swaggerDocument, {
+      customCss: ".swagger-ui .topbar { display: none }",
+      customSiteTitle: "AURA API Documentation",
+    })
+  );
+  logger.info("Swagger documentation available at /api-docs");
 } catch (error) {
-  logger.error('Failed to load Swagger documentation', error as Error)
+  logger.error("Failed to load Swagger documentation", error as Error);
 }
 
 // API Routes
-app.use(config.API_BASE_PATH, routes)
+app.use(config.API_BASE_PATH, routes);
 
 // Error handling middleware (must be last)
-app.use(notFoundHandler)
-app.use(errorHandler)
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 // Server startup
 async function startServer() {
   try {
-    logger.info('Starting Personal DeFi Wealth Manager Backend...')
+    logger.info("Starting Personal DeFi Wealth Manager Backend...");
 
     // Health checks for all services
     const [dbHealth, blockchainHealth] = await Promise.all([
       databaseService.healthCheck(),
-      blockchainService.healthCheck()
-    ])
+      blockchainService.healthCheck(),
+    ]);
 
-    logger.info('Service health checks completed', {
+    logger.info("Service health checks completed", {
       database: dbHealth,
       blockchain: blockchainHealth,
-      environment: config.NODE_ENV
-    })
+      environment: config.NODE_ENV,
+    });
 
     // Start the server
     const server = app.listen(config.PORT, () => {
@@ -68,17 +76,17 @@ async function startServer() {
         port: config.PORT,
         environment: config.NODE_ENV,
         apiBasePath: config.API_BASE_PATH,
-        pid: process.pid
-      })
+        pid: process.pid,
+      });
 
       // Log important configuration (without secrets)
-      logger.info('Configuration loaded', {
+      logger.info("Configuration loaded", {
         chainId: config.CHAIN_ID,
         databasePath: config.DATABASE_PATH,
         logLevel: config.LOG_LEVEL,
         rateLimitEnabled: config.isProduction,
-        aiRecommendationsEnabled: config.ENABLE_AI_RECOMMENDATIONS
-      })
+        aiRecommendationsEnabled: config.ENABLE_AI_RECOMMENDATIONS,
+      });
 
       // API endpoints summary
       console.log(`
@@ -87,66 +95,73 @@ async function startServer() {
 ├─────────────────────────────────────────────────────────────────┤
 │ Environment: ${config.NODE_ENV.padEnd(47)} │
 │ Server:      http://localhost:${config.PORT.toString().padEnd(37)} │
-│ Health:      http://localhost:${config.PORT}/health${' '.repeat(25)} │
-│ API Docs:    http://localhost:${config.PORT}/api-docs${' '.repeat(23)} │
-│ API Routes:  http://localhost:${config.PORT}${config.API_BASE_PATH}${' '.repeat(25)} │
-│ Database:    ${dbHealth ? '✅ Connected' : '❌ Disconnected'.padEnd(47)} │
-│ Blockchain:  ${Object.values(blockchainHealth).every(h => h) ? '✅ Connected' : '❌ Issues detected'.padEnd(47)} │
+│ Health:      http://localhost:${config.PORT}/health${" ".repeat(25)} │
+│ API Docs:    http://localhost:${config.PORT}/api-docs${" ".repeat(23)} │
+│ API Routes:  http://localhost:${config.PORT}${
+        config.API_BASE_PATH
+      }${" ".repeat(25)} │
+│ Database:    ${dbHealth ? "✅ Connected" : "❌ Disconnected".padEnd(47)} │
+│ Blockchain:  ${
+        Object.values(blockchainHealth).every((h) => h)
+          ? "✅ Connected"
+          : "❌ Issues detected".padEnd(47)
+      } │
 └─────────────────────────────────────────────────────────────────┘
-      `)
-    })
+      `);
+    });
 
     // Graceful shutdown handling
     const gracefulShutdown = async (signal: string) => {
-      logger.info(`Received ${signal}, starting graceful shutdown...`)
-      
+      logger.info(`Received ${signal}, starting graceful shutdown...`);
+
       server.close(async () => {
-        logger.info('HTTP server closed')
-        
+        logger.info("HTTP server closed");
+
         try {
-          await databaseService.close()
-          logger.info('Database connection closed')
+          await databaseService.close();
+          logger.info("Database connection closed");
         } catch (error) {
-          logger.error('Error closing database', error as Error)
+          logger.error("Error closing database", error as Error);
         }
-        
-        logger.info('Graceful shutdown completed')
-        process.exit(0)
-      })
+
+        logger.info("Graceful shutdown completed");
+        process.exit(0);
+      });
 
       // Force exit after 10 seconds
       setTimeout(() => {
-        logger.error('Could not close connections in time, forcefully shutting down')
-        process.exit(1)
-      }, 10000)
-    }
+        logger.error(
+          "Could not close connections in time, forcefully shutting down"
+        );
+        process.exit(1);
+      }, 10000);
+    };
 
     // Listen for shutdown signals
-    process.on('SIGTERM', () => gracefulShutdown('SIGTERM'))
-    process.on('SIGINT', () => gracefulShutdown('SIGINT'))
+    process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+    process.on("SIGINT", () => gracefulShutdown("SIGINT"));
 
     // Handle uncaught exceptions
-    process.on('uncaughtException', (error) => {
-      logger.error('Uncaught Exception', error)
-      gracefulShutdown('uncaughtException')
-    })
+    process.on("uncaughtException", (error) => {
+      logger.error("Uncaught Exception", error);
+      gracefulShutdown("uncaughtException");
+    });
 
-    process.on('unhandledRejection', (reason, promise) => {
-      logger.error('Unhandled Rejection', new Error(String(reason)), {
-        promise: promise.toString()
-      })
-      gracefulShutdown('unhandledRejection')
-    })
-
+    process.on("unhandledRejection", (reason, promise) => {
+      logger.error("Unhandled Rejection", new Error(String(reason)), {
+        promise: promise.toString(),
+      });
+      gracefulShutdown("unhandledRejection");
+    });
   } catch (error) {
-    logger.error('Failed to start server', error as Error)
-    process.exit(1)
+    logger.error("Failed to start server", error as Error);
+    process.exit(1);
   }
 }
 
 // Start the server
 if (require.main === module) {
-  startServer()
+  startServer();
 }
 
-export default app
+export default app;
