@@ -12,7 +12,7 @@ import {NetworkConfig} from "./config/NetworkConfig.sol";
  */
 contract DeployScript is Script {
     // Initial yield rates (basis points)
-    uint256 constant INITIAL_BENQI_APY = 500; // 5%
+    uint256 constant INITIAL_AAVE_APY = 500; // 5% - Changed from INITIAL_BENQI_APY
     uint256 constant INITIAL_TRADERJOE_APY = 800; // 8%
     uint256 constant INITIAL_YIELDYAK_APY = 1200; // 12%
 
@@ -27,14 +27,14 @@ contract DeployScript is Script {
 
         console.log("Deploying YieldOptimizer with configuration:");
         console.log("- TraderJoe Router:", config.traderJoeRouter);
-        console.log("- Benqi Comptroller:", config.benqiComptroller);
+        console.log("- Aave V3 Pool:", config.aavePool); // Changed from benqiComptroller
         console.log("- YieldYak Farm:", config.yieldYakFarm);
         console.log("- WAVAX:", config.wavax);
         console.log("- USDC:", config.usdc);
 
         yieldOptimizer = new YieldOptimizer(
             config.traderJoeRouter,
-            config.benqiComptroller,
+            config.aavePool, // Changed from benqiComptroller
             config.yieldYakFarm,
             config.wavax,
             config.usdc
@@ -49,13 +49,13 @@ contract DeployScript is Script {
 
         // Set initial yield rates
         yieldOptimizer.updateYields(
-            INITIAL_BENQI_APY,
+            INITIAL_AAVE_APY, // Changed from INITIAL_BENQI_APY
             INITIAL_TRADERJOE_APY,
             INITIAL_YIELDYAK_APY
         );
 
         console.log("Initial yields configured:");
-        console.log("- Benqi APY:", INITIAL_BENQI_APY, "basis points");
+        console.log("- Aave APY:", INITIAL_AAVE_APY, "basis points"); // Changed from Benqi
         console.log("- TraderJoe APY:", INITIAL_TRADERJOE_APY, "basis points");
         console.log("- YieldYak APY:", INITIAL_YIELDYAK_APY, "basis points");
 
@@ -68,17 +68,17 @@ contract DeployScript is Script {
         console.log("YieldOptimizer:", address(yieldOptimizer));
         console.log("Owner:", yieldOptimizer.owner());
         console.log("TraderJoe Router:", yieldOptimizer.traderJoeRouter());
-        console.log("Benqi Comptroller:", yieldOptimizer.benqiComptroller());
+        console.log("Aave Pool:", yieldOptimizer.aavePool()); // Updated to use new function name
         console.log("YieldYak Farm:", yieldOptimizer.yieldYakFarm());
 
         (
-            uint256 benqiAPY,
+            uint256 aaveAPY, // Changed from benqiAPY
             uint256 traderJoeAPY,
             uint256 yieldYakAPY,
 
         ) = yieldOptimizer.getCurrentYields();
         console.log("Current Yields:");
-        console.log("- Benqi APY:", benqiAPY);
+        console.log("- Aave APY:", aaveAPY); // Changed from benqiAPY
         console.log("- TraderJoe APY:", traderJoeAPY);
         console.log("- YieldYak APY:", yieldYakAPY);
 
@@ -138,10 +138,7 @@ contract DeployScript is Script {
             yieldOptimizer.traderJoeRouter() != address(0),
             "TraderJoe router not set"
         );
-        require(
-            yieldOptimizer.benqiComptroller() != address(0),
-            "Benqi comptroller not set"
-        );
+        require(yieldOptimizer.aavePool() != address(0), "Aave pool not set");
         require(
             yieldOptimizer.yieldYakFarm() != address(0),
             "YieldYak farm not set"

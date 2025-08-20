@@ -39,7 +39,7 @@ contract YieldOptimizerTest is Test {
         // Deploy YieldOptimizer contract with test configuration
         optimizer = new YieldOptimizer(
             config.traderJoeRouter,
-            config.benqiComptroller,
+            config.aavePool,
             config.yieldYakFarm,
             config.wavax,
             config.usdc
@@ -100,12 +100,12 @@ contract YieldOptimizerTest is Test {
 
         // Check allocations (70% Benqi, 30% TraderJoe, 0% YieldYak)
         (
-            uint256 benqiAmount,
+            uint256 aaveAmount,
             uint256 traderJoeAmount,
             uint256 yieldYakAmount
         ) = optimizer.userAllocations(user1);
 
-        assertEq(benqiAmount, (depositAmount * 7000) / 10000); // 70%
+        assertEq(aaveAmount, (depositAmount * 7000) / 10000); // 70%
         assertEq(traderJoeAmount, (depositAmount * 3000) / 10000); // 30%
         assertEq(yieldYakAmount, 0); // 0%
 
@@ -123,12 +123,12 @@ contract YieldOptimizerTest is Test {
 
         // Check allocations (40% Benqi, 40% TraderJoe, 20% YieldYak)
         (
-            uint256 benqiAmount,
+            uint256 aaveAmount,
             uint256 traderJoeAmount,
             uint256 yieldYakAmount
         ) = optimizer.userAllocations(user2);
 
-        assertEq(benqiAmount, (depositAmount * 4000) / 10000); // 40%
+        assertEq(aaveAmount, (depositAmount * 4000) / 10000); // 40%
         assertEq(traderJoeAmount, (depositAmount * 4000) / 10000); // 40%
         assertEq(yieldYakAmount, (depositAmount * 2000) / 10000); // 20%
 
@@ -146,12 +146,12 @@ contract YieldOptimizerTest is Test {
 
         // Check allocations (20% Benqi, 30% TraderJoe, 50% YieldYak)
         (
-            uint256 benqiAmount,
+            uint256 aaveAmount,
             uint256 traderJoeAmount,
             uint256 yieldYakAmount
         ) = optimizer.userAllocations(user3);
 
-        assertEq(benqiAmount, (depositAmount * 2000) / 10000); // 20%
+        assertEq(aaveAmount, (depositAmount * 2000) / 10000); // 20%
         assertEq(traderJoeAmount, (depositAmount * 3000) / 10000); // 30%
         assertEq(yieldYakAmount, (depositAmount * 5000) / 10000); // 50%
 
@@ -179,12 +179,12 @@ contract YieldOptimizerTest is Test {
 
         // Check accumulated allocations
         (
-            uint256 benqiAmount,
+            uint256 aaveAmount,
             uint256 traderJoeAmount,
             uint256 yieldYakAmount
         ) = optimizer.userAllocations(user1);
 
-        assertEq(benqiAmount, (expectedTotal * 4000) / 10000); // 40%
+        assertEq(aaveAmount, (expectedTotal * 4000) / 10000); // 40%
         assertEq(traderJoeAmount, (expectedTotal * 4000) / 10000); // 40%
         assertEq(yieldYakAmount, (expectedTotal * 2000) / 10000); // 20%
 
@@ -250,7 +250,7 @@ contract YieldOptimizerTest is Test {
         assertEq(profile.autoRebalance, false);
 
         // Check allocation data
-        assertEq(allocation.benqiAmount, (depositAmount * 4000) / 10000);
+        assertEq(allocation.aaveAmount, (depositAmount * 4000) / 10000);
         assertEq(allocation.traderJoeAmount, (depositAmount * 4000) / 10000);
         assertEq(allocation.yieldYakAmount, (depositAmount * 2000) / 10000);
 
@@ -307,11 +307,11 @@ contract YieldOptimizerTest is Test {
 
         // Check allocations are reset
         (
-            uint256 benqiAmount,
+            uint256 aaveAmount,
             uint256 traderJoeAmount,
             uint256 yieldYakAmount
         ) = optimizer.userAllocations(user1);
-        assertEq(benqiAmount, 0);
+        assertEq(aaveAmount, 0);
         assertEq(traderJoeAmount, 0);
         assertEq(yieldYakAmount, 0);
 
@@ -474,13 +474,13 @@ contract YieldOptimizerTest is Test {
 
         // Check that allocations are correct based on risk score
         (
-            uint256 benqiAmount,
+            uint256 aaveAmount,
             uint256 traderJoeAmount,
             uint256 yieldYakAmount
         ) = optimizer.userAllocations(user1);
 
         // Total should equal deposit
-        assertEq(benqiAmount + traderJoeAmount + yieldYakAmount, 1 ether);
+        assertEq(aaveAmount + traderJoeAmount + yieldYakAmount, 1 ether);
 
         vm.stopPrank();
 

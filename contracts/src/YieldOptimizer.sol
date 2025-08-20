@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 import "./interfaces/ITraderJoe.sol";
-import "./interfaces/IBenqi.sol";
+import "./interfaces/IAave.sol";
 import "./interfaces/IYieldYak.sol";
 
 contract YieldOptimizer is Ownable, ReentrancyGuard {
@@ -21,13 +21,13 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
     }
 
     struct ProtocolAllocation {
-        uint256 benqiAmount; // Amount allocated to Benqi
+        uint256 aaveAmount; // Amount allocated to Aave
         uint256 traderJoeAmount; // Amount allocated to TraderJoe
         uint256 yieldYakAmount; // Amount allocated to YieldYak
     }
 
     struct YieldData {
-        uint256 benqiAPY; // Benqi current APY (basis points)
+        uint256 aaveAPY; // Aave current APY (basis points)
         uint256 traderJoeAPY; // TraderJoe current APY (basis points)
         uint256 yieldYakAPY; // YieldYak current APY (basis points)
         uint256 lastUpdated; // Timestamp of last yield update
@@ -40,7 +40,7 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
 
     // Protocol addresses (will be set in constructor or setter functions)
     address public traderJoeRouter;
-    address public benqiComptroller;
+    address public aavePool;
     address public yieldYakFarm;
 
     // TraderJoe specific addresses - now configurable
@@ -57,7 +57,7 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
     event YieldOptimized(address indexed user, uint256 amount, uint8 riskScore);
     event Rebalanced(address indexed user, uint256 totalValue);
     event YieldsUpdated(
-        uint256 benqiAPY,
+        uint256 aaveAPY,
         uint256 traderJoeAPY,
         uint256 yieldYakAPY
     );
@@ -66,21 +66,21 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
 
     constructor(
         address _traderJoeRouter,
-        address _benqiComptroller,
+        address _aavePool,
         address _yieldYakFarm,
         address _wavax,
         address _usdc
     ) Ownable(msg.sender) {
         // Set protocol addresses
         traderJoeRouter = _traderJoeRouter;
-        benqiComptroller = _benqiComptroller;
+        aavePool = _aavePool;
         yieldYakFarm = _yieldYakFarm;
         WAVAX = _wavax;
         USDC = _usdc;
 
         // Initialize with placeholder yields (will be updated by oracle/keeper)
         currentYields = YieldData({
-            benqiAPY: 500, // 5% APY
+            aaveAPY: 500, // 5% APY
             traderJoeAPY: 800, // 8% APY
             yieldYakAPY: 1200, // 12% APY
             lastUpdated: block.timestamp
@@ -108,9 +108,9 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
 
     /**
      * @dev Internal function to allocate funds based on risk score
-     * Conservative (0-33): 70% Benqi, 30% TraderJoe
-     * Balanced (34-66): 40% Benqi, 40% TraderJoe, 20% YieldYak
-     * Aggressive (67-100): 20% Benqi, 30% TraderJoe, 50% YieldYak
+     * Conservative (0-33): 70% Aave, 30% TraderJoe
+     * Balanced (34-66): 40% Aave, 40% TraderJoe, 20% YieldYak
+     * Aggressive (67-100): 20% Aave, 30% TraderJoe, 50% YieldYak
      */
     function _allocateFunds(
         address user,
@@ -119,35 +119,35 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
     ) internal {
         ProtocolAllocation storage allocation = userAllocations[user];
 
-        uint256 benqiAllocation;
+        uint256 aaveAllocation;
         uint256 traderJoeAllocation;
         uint256 yieldYakAllocation;
 
         if (riskScore <= 33) {
             // Conservative allocation
-            benqiAllocation = (amount * 7000) / BASIS_POINTS; // 70%
+            aaveAllocation = (amount * 7000) / BASIS_POINTS; // 70%
             traderJoeAllocation = (amount * 3000) / BASIS_POINTS; // 30%
             yieldYakAllocation = 0; // 0%
         } else if (riskScore <= 66) {
             // Balanced allocation
-            benqiAllocation = (amount * 4000) / BASIS_POINTS; // 40%
+            aaveAllocation = (amount * 4000) / BASIS_POINTS; // 40%
             traderJoeAllocation = (amount * 4000) / BASIS_POINTS; // 40%
             yieldYakAllocation = (amount * 2000) / BASIS_POINTS; // 20%
         } else {
             // Aggressive allocation
-            benqiAllocation = (amount * 2000) / BASIS_POINTS; // 20%
+            aaveAllocation = (amount * 2000) / BASIS_POINTS; // 20%
             traderJoeAllocation = (amount * 3000) / BASIS_POINTS; // 30%
             yieldYakAllocation = (amount * 5000) / BASIS_POINTS; // 50%
         }
 
         // Update user's allocation tracking
-        allocation.benqiAmount += benqiAllocation;
+        allocation.aaveAmount += aaveAllocation;
         allocation.traderJoeAmount += traderJoeAllocation;
         allocation.yieldYakAmount += yieldYakAllocation;
 
         // Execute the actual protocol interactions
-        if (benqiAllocation > 0) {
-            _depositToBenqi(benqiAllocation);
+        if (aaveAllocation > 0) {
+            _depositToAave(aaveAllocation);
         }
         if (traderJoeAllocation > 0) {
             _depositToTraderJoe(traderJoeAllocation);
@@ -164,14 +164,14 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
         external
         view
         returns (
-            uint256 benqiAPY,
+            uint256 aaveAPY,
             uint256 traderJoeAPY,
             uint256 yieldYakAPY,
             uint256 lastUpdated
         )
     {
         return (
-            currentYields.benqiAPY,
+            currentYields.aaveAPY,
             currentYields.traderJoeAPY,
             currentYields.yieldYakAPY,
             currentYields.lastUpdated
@@ -197,7 +197,7 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
 
         // Calculate estimated current value (simplified calculation)
         estimatedValue =
-            allocation.benqiAmount +
+            allocation.aaveAmount +
             allocation.traderJoeAmount +
             allocation.yieldYakAmount;
     }
@@ -212,7 +212,7 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
         view
         returns (
             bool shouldRebalance,
-            uint256 newBenqiAllocation,
+            uint256 newAaveAllocation,
             uint256 newTraderJoeAllocation,
             uint256 newYieldYakAllocation
         )
@@ -225,12 +225,12 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
         }
 
         // Calculate optimal allocation for current risk score
-        uint256 totalValue = current.benqiAmount +
+        uint256 totalValue = current.aaveAmount +
             current.traderJoeAmount +
             current.yieldYakAmount;
 
         (
-            newBenqiAllocation,
+            newAaveAllocation,
             newTraderJoeAllocation,
             newYieldYakAllocation
         ) = _calculateOptimalAllocation(totalValue, profile.riskScore);
@@ -238,7 +238,7 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
         // Check if rebalancing is needed (if current allocation deviates by more than threshold)
         shouldRebalance = _shouldRebalance(
             current,
-            newBenqiAllocation,
+            newAaveAllocation,
             newTraderJoeAllocation,
             newYieldYakAllocation,
             totalValue
@@ -253,12 +253,12 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
         require(profile.totalDeposited > 0, "No deposits to rebalance");
 
         ProtocolAllocation storage allocation = userAllocations[msg.sender];
-        uint256 totalValue = allocation.benqiAmount +
+        uint256 totalValue = allocation.aaveAmount +
             allocation.traderJoeAmount +
             allocation.yieldYakAmount;
 
         (
-            uint256 newBenqi,
+            uint256 newAave,
             uint256 newTraderJoe,
             uint256 newYieldYak
         ) = _calculateOptimalAllocation(totalValue, profile.riskScore);
@@ -267,7 +267,7 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
         _executeRebalance(
             msg.sender,
             allocation,
-            newBenqi,
+            newAave,
             newTraderJoe,
             newYieldYak
         );
@@ -286,9 +286,9 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
         uint256 totalWithdrawn = 0;
 
         // Withdraw from all protocols
-        if (allocation.benqiAmount > 0) {
-            totalWithdrawn += _withdrawFromBenqi(allocation.benqiAmount);
-            allocation.benqiAmount = 0;
+        if (allocation.aaveAmount > 0) {
+            totalWithdrawn += _withdrawFromAave(allocation.aaveAmount);
+            allocation.aaveAmount = 0;
         }
         if (allocation.traderJoeAmount > 0) {
             totalWithdrawn += _withdrawFromTraderJoe(
@@ -317,9 +317,9 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
     }
 
     // Internal helper functions for protocol interactions
-    function _depositToBenqi(uint256 amount) internal {
-        // TODO: Implement Benqi deposit logic
-        // This would interact with Benqi's qiAVAX contract
+    function _depositToAave(uint256 amount) internal {
+        // TODO: Implement Aave deposit logic
+        // This would interact with Aave V3 Pool contract
     }
 
     function _depositToTraderJoe(uint256 amount) internal {
@@ -401,14 +401,12 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
         // This would stake in YieldYak farming strategies
     }
 
-    function _withdrawFromBenqi(
-        uint256 amount
-    ) internal view returns (uint256) {
+    function _withdrawFromAave(uint256 amount) internal view returns (uint256) {
         // Mock implementation for hackathon demo
-        // In production, this would interact with Benqi's qiAVAX contract
+        // In production, this would interact with Aave V3 Pool contract
         // For demo purposes, we simulate withdrawal with potential yield gains
         uint256 withdrawnAmount = (amount *
-            (10000 + currentYields.benqiAPY / 365)) / 10000;
+            (10000 + currentYields.aaveAPY / 365)) / 10000;
         return withdrawnAmount;
     }
 
@@ -440,18 +438,18 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
     )
         internal
         pure
-        returns (uint256 benqi, uint256 traderJoe, uint256 yieldYak)
+        returns (uint256 aave, uint256 traderJoe, uint256 yieldYak)
     {
         if (riskScore <= 33) {
-            benqi = (totalAmount * 7000) / BASIS_POINTS;
+            aave = (totalAmount * 7000) / BASIS_POINTS;
             traderJoe = (totalAmount * 3000) / BASIS_POINTS;
             yieldYak = 0;
         } else if (riskScore <= 66) {
-            benqi = (totalAmount * 4000) / BASIS_POINTS;
+            aave = (totalAmount * 4000) / BASIS_POINTS;
             traderJoe = (totalAmount * 4000) / BASIS_POINTS;
             yieldYak = (totalAmount * 2000) / BASIS_POINTS;
         } else {
-            benqi = (totalAmount * 2000) / BASIS_POINTS;
+            aave = (totalAmount * 2000) / BASIS_POINTS;
             traderJoe = (totalAmount * 3000) / BASIS_POINTS;
             yieldYak = (totalAmount * 5000) / BASIS_POINTS;
         }
@@ -459,29 +457,29 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
 
     function _shouldRebalance(
         ProtocolAllocation memory current,
-        uint256 targetBenqi,
+        uint256 targetAave,
         uint256 targetTraderJoe,
         uint256 targetYieldYak,
         uint256 totalValue
     ) internal pure returns (bool) {
-        uint256 benqiDiff = current.benqiAmount > targetBenqi
-            ? current.benqiAmount - targetBenqi
-            : targetBenqi - current.benqiAmount;
+        uint256 aaveDiff = current.aaveAmount > targetAave
+            ? current.aaveAmount - targetAave
+            : targetAave - current.aaveAmount;
 
         uint256 threshold = (totalValue * REBALANCE_THRESHOLD) / BASIS_POINTS;
 
-        return benqiDiff > threshold;
+        return aaveDiff > threshold;
     }
 
     function _executeRebalance(
         address user,
         ProtocolAllocation storage current,
-        uint256 targetBenqi,
+        uint256 targetAave,
         uint256 targetTraderJoe,
         uint256 targetYieldYak
     ) internal {
         // Calculate differences between current and target allocations
-        int256 benqiDiff = int256(targetBenqi) - int256(current.benqiAmount);
+        int256 aaveDiff = int256(targetAave) - int256(current.aaveAmount);
         int256 traderJoeDiff = int256(targetTraderJoe) -
             int256(current.traderJoeAmount);
         int256 yieldYakDiff = int256(targetYieldYak) -
@@ -490,9 +488,9 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
         uint256 totalWithdrawn = 0;
 
         // Step 1: Withdraw from over-allocated protocols
-        if (benqiDiff < 0) {
-            uint256 withdrawAmount = uint256(-benqiDiff);
-            totalWithdrawn += _withdrawFromBenqi(withdrawAmount);
+        if (aaveDiff < 0) {
+            uint256 withdrawAmount = uint256(-aaveDiff);
+            totalWithdrawn += _withdrawFromAave(withdrawAmount);
         }
         if (traderJoeDiff < 0) {
             uint256 withdrawAmount = uint256(-traderJoeDiff);
@@ -504,8 +502,8 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
         }
 
         // Step 2: Deposit to under-allocated protocols
-        if (benqiDiff > 0) {
-            _depositToBenqi(uint256(benqiDiff));
+        if (aaveDiff > 0) {
+            _depositToAave(uint256(aaveDiff));
         }
         if (traderJoeDiff > 0) {
             _depositToTraderJoe(uint256(traderJoeDiff));
@@ -515,7 +513,7 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
         }
 
         // Update allocations to reflect new state
-        current.benqiAmount = targetBenqi;
+        current.aaveAmount = targetAave;
         current.traderJoeAmount = targetTraderJoe;
         current.yieldYakAmount = targetYieldYak;
     }
@@ -535,8 +533,8 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
             protocolHash == keccak256(abi.encodePacked("traderjoe_pair"))
         ) {
             traderJoePair = newAddress;
-        } else if (protocolHash == keccak256(abi.encodePacked("benqi"))) {
-            benqiComptroller = newAddress;
+        } else if (protocolHash == keccak256(abi.encodePacked("aave"))) {
+            aavePool = newAddress;
         } else if (protocolHash == keccak256(abi.encodePacked("yieldyak"))) {
             yieldYakFarm = newAddress;
         } else if (protocolHash == keccak256(abi.encodePacked("wavax"))) {
@@ -570,16 +568,16 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
     }
 
     function updateYields(
-        uint256 _benqiAPY,
+        uint256 _aaveAPY,
         uint256 _traderJoeAPY,
         uint256 _yieldYakAPY
     ) external onlyOwner {
-        currentYields.benqiAPY = _benqiAPY;
+        currentYields.aaveAPY = _aaveAPY;
         currentYields.traderJoeAPY = _traderJoeAPY;
         currentYields.yieldYakAPY = _yieldYakAPY;
         currentYields.lastUpdated = block.timestamp;
 
-        emit YieldsUpdated(_benqiAPY, _traderJoeAPY, _yieldYakAPY);
+        emit YieldsUpdated(_aaveAPY, _traderJoeAPY, _yieldYakAPY);
     }
 
     /**
