@@ -261,7 +261,7 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
         // This would stake in YieldYak farming strategies
     }
 
-    function _withdrawFromBenqi(uint256 amount) internal returns (uint256) {
+    function _withdrawFromBenqi(uint256 amount) view  internal returns (uint256) {
         // Mock implementation for hackathon demo
         // In production, this would interact with Benqi's qiAVAX contract
         // For demo purposes, we simulate withdrawal with potential yield gains
@@ -269,7 +269,7 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
         return withdrawnAmount;
     }
 
-    function _withdrawFromTraderJoe(uint256 amount) internal returns (uint256) {
+    function _withdrawFromTraderJoe(uint256 amount) view  internal returns (uint256) {
         // Mock implementation for hackathon demo
         // In production, this would interact with TraderJoe's LP contracts
         // For demo purposes, we simulate withdrawal with potential yield gains
@@ -277,7 +277,7 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
         return withdrawnAmount;
     }
 
-    function _withdrawFromYieldYak(uint256 amount) internal returns (uint256) {
+    function _withdrawFromYieldYak(uint256 amount) view  internal returns (uint256) {
         // Mock implementation for hackathon demo
         // In production, this would interact with YieldYak's strategy contracts
         // For demo purposes, we simulate withdrawal with potential yield gains
