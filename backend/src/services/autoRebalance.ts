@@ -25,7 +25,7 @@ export interface RebalanceDecision {
   reason: string;
   urgency: "low" | "medium" | "high";
   newAllocation?: {
-    benqi: number;
+    aave: number; // Use Aave instead of Benqi
     traderJoe: number;
     yieldYak: number;
   };
@@ -69,7 +69,7 @@ export class AutoRebalanceService {
   async evaluateRebalanceDecision(
     userProfile: UserProfile,
     currentAllocation: {
-      benqi: number;
+      aave: number; // Use Aave instead of Benqi
       traderJoe: number;
       yieldYak: number;
     }
@@ -111,7 +111,7 @@ export class AutoRebalanceService {
         )}% from target`,
         urgency: driftAnalysis.maxDrift > 20 ? "high" : "medium",
         newAllocation: {
-          benqi: targetAllocation.benqi,
+          aave: targetAllocation.aave || 0, // Use Aave instead of Benqi
           traderJoe: targetAllocation.traderJoe,
           yieldYak: targetAllocation.yieldYak,
         },
@@ -170,19 +170,19 @@ export class AutoRebalanceService {
    * Calculate allocation drift from target
    */
   private calculateAllocationDrift(
-    current: { benqi: number; traderJoe: number; yieldYak: number },
-    target: { benqi: number; traderJoe: number; yieldYak: number }
+    current: { aave: number; traderJoe: number; yieldYak: number },
+    target: { aave: number; traderJoe: number; yieldYak: number }
   ): {
     maxDrift: number;
-    drifts: { benqi: number; traderJoe: number; yieldYak: number };
+    drifts: { aave: number; traderJoe: number; yieldYak: number };
   } {
     const drifts = {
-      benqi: Math.abs(current.benqi - target.benqi),
+      aave: Math.abs(current.aave - target.aave), // Use Aave instead of Benqi
       traderJoe: Math.abs(current.traderJoe - target.traderJoe),
       yieldYak: Math.abs(current.yieldYak - target.yieldYak),
     };
 
-    const maxDrift = Math.max(drifts.benqi, drifts.traderJoe, drifts.yieldYak);
+    const maxDrift = Math.max(drifts.aave, drifts.traderJoe, drifts.yieldYak);
 
     return { maxDrift, drifts };
   }
@@ -224,7 +224,7 @@ export class AutoRebalanceService {
         )}% APY improvement opportunity`,
         urgency: apyImprovement > 300 ? "high" : "medium",
         newAllocation: {
-          benqi: optimalAllocation.benqi,
+          aave: optimalAllocation.aave || 0, // Use Aave instead of Benqi
           traderJoe: optimalAllocation.traderJoe,
           yieldYak: optimalAllocation.yieldYak,
         },
@@ -295,7 +295,7 @@ export class AutoRebalanceService {
   async executeAutoRebalance(
     userAddress: string,
     newAllocation: {
-      benqi: number;
+      aave: number; // Use Aave instead of Benqi
       traderJoe: number;
       yieldYak: number;
     }
@@ -361,7 +361,7 @@ export class AutoRebalanceService {
 
         // Evaluate rebalance decision
         const decision = await this.evaluateRebalanceDecision(userProfile, {
-          benqi: Number(currentAllocation.allocation.benqiPercentage),
+          aave: Number(currentAllocation.allocation.aavePercentage || 0), // Use Aave instead of Benqi
           traderJoe: Number(currentAllocation.allocation.traderJoePercentage),
           yieldYak: Number(currentAllocation.allocation.yieldYakPercentage),
         });

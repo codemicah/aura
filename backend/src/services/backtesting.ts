@@ -34,7 +34,7 @@ export interface TimelineEntry {
   portfolioValue: number;
   allocation: AllocationStrategy;
   yields: {
-    benqi: number;
+    aave: number; // Use Aave instead of Benqi
     traderJoe: number;
     yieldYak: number;
   };
@@ -44,9 +44,10 @@ export interface TimelineEntry {
 
 // Historical yield data (mock data for backtesting)
 const HISTORICAL_YIELDS = {
-  benqi: {
-    base: 5.2,
-    volatility: 1.5, // +/- percentage
+  aave: {
+    // Use Aave instead of Benqi
+    base: 5.5, // Slightly higher than old Benqi rate
+    volatility: 1.0, // Lower volatility for enterprise-grade protocol
     trend: 0.02, // slight upward trend
   },
   traderJoe: {
@@ -226,7 +227,7 @@ export class BacktestingService {
    * Generate daily yields with realistic randomness
    */
   private generateDailyYields(date: Date): {
-    benqi: number;
+    aave: number; // Use Aave instead of Benqi
     traderJoe: number;
     yieldYak: number;
   } {
@@ -248,8 +249,9 @@ export class BacktestingService {
     const weekendFactor = dayOfWeek === 0 || dayOfWeek === 6 ? 0.8 : 1.0;
 
     // Generate yields with volatility
-    const benqiYield = this.generateYieldWithVolatility(
-      HISTORICAL_YIELDS.benqi,
+    const aaveYield = this.generateYieldWithVolatility(
+      // Use Aave instead of Benqi
+      HISTORICAL_YIELDS.aave,
       marketMultiplier * weekendFactor
     );
     const traderJoeYield = this.generateYieldWithVolatility(
@@ -262,7 +264,7 @@ export class BacktestingService {
     );
 
     return {
-      benqi: benqiYield / 365, // Convert annual to daily
+      aave: aaveYield / 365, // Convert annual to daily (Use Aave instead of Benqi)
       traderJoe: traderJoeYield / 365,
       yieldYak: yieldYakYield / 365,
     };
@@ -290,17 +292,17 @@ export class BacktestingService {
   private calculateDailyReturn(
     portfolioValue: number,
     allocation: AllocationStrategy,
-    dailyYields: { benqi: number; traderJoe: number; yieldYak: number }
+    dailyYields: { aave: number; traderJoe: number; yieldYak: number }
   ): number {
-    const benqiValue = portfolioValue * (allocation.benqi / 100);
+    const aaveValue = portfolioValue * ((allocation.aave || 0) / 100); // Use Aave instead of Benqi
     const traderJoeValue = portfolioValue * (allocation.traderJoe / 100);
     const yieldYakValue = portfolioValue * (allocation.yieldYak / 100);
 
-    const benqiReturn = benqiValue * (dailyYields.benqi / 100);
+    const aaveReturn = aaveValue * (dailyYields.aave / 100);
     const traderJoeReturn = traderJoeValue * (dailyYields.traderJoe / 100);
     const yieldYakReturn = yieldYakValue * (dailyYields.yieldYak / 100);
 
-    return benqiReturn + traderJoeReturn + yieldYakReturn;
+    return aaveReturn + traderJoeReturn + yieldYakReturn; // Use aaveReturn instead of benqiReturn
   }
 
   /**

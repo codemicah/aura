@@ -21,18 +21,28 @@ export class MarketController {
       // Get yields from external APIs (off-chain data for comparison)
       const protocolData = await defiDataService.getAllProtocolData();
 
+      // Filter out Benqi from frontend response - only send active protocols
+      const activeProtocols = protocolData.filter(
+        (p) => p.protocol !== "benqi"
+      );
+
       const response: ApiResponse = {
         success: true,
         data: {
-          onChain: onChainYields,
+          onChain: {
+            aave: onChainYields.aave, // Send Aave data instead of Benqi
+            traderJoe: onChainYields.traderJoe,
+            yieldYak: onChainYields.yieldYak,
+            lastUpdated: onChainYields.lastUpdated,
+          },
           offChain: {
-            benqi: protocolData.find((p) => p.protocol === "benqi")?.apy || 0,
+            aave: protocolData.find((p) => p.protocol === "aave")?.apy || 0,
             traderJoe:
               protocolData.find((p) => p.protocol === "traderjoe")?.apy || 0,
             yieldYak:
               protocolData.find((p) => p.protocol === "yieldyak")?.apy || 0,
           },
-          protocols: protocolData,
+          protocols: activeProtocols, // Only send active protocols (no Benqi)
           lastUpdated: new Date(),
         },
         timestamp: new Date(),
@@ -121,14 +131,17 @@ export class MarketController {
     try {
       const { protocol } = req.params;
 
-      if (!["benqi", "traderjoe", "yieldyak"].includes(protocol)) {
-        throw new APIError("Invalid protocol specified", 400);
+      if (!["aave", "traderjoe", "yieldyak"].includes(protocol)) {
+        throw new APIError(
+          "Invalid protocol specified. Supported protocols: aave, traderjoe, yieldyak",
+          400
+        );
       }
 
       let protocolData;
       switch (protocol) {
-        case "benqi":
-          protocolData = await defiDataService.getBenqiData();
+        case "aave":
+          protocolData = await defiDataService.getAaveData();
           break;
         case "traderjoe":
           protocolData = await defiDataService.getTraderJoeData();
@@ -164,8 +177,11 @@ export class MarketController {
       const { protocol } = req.params;
       const days = parseInt(req.query.days as string) || 30;
 
-      if (!["benqi", "traderjoe", "yieldyak"].includes(protocol)) {
-        throw new APIError("Invalid protocol specified", 400);
+      if (!["aave", "traderjoe", "yieldyak"].includes(protocol)) {
+        throw new APIError(
+          "Invalid protocol specified. Supported protocols: aave, traderjoe, yieldyak",
+          400
+        );
       }
 
       // Mock historical data - in production, this would come from a time-series database
@@ -189,7 +205,7 @@ export class MarketController {
       };
 
       const baseAPYs = {
-        benqi: 5.2,
+        aave: 5.5, // Use Aave instead of Benqi with slightly higher APY
         traderjoe: 8.7,
         yieldyak: 12.4,
       };

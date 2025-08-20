@@ -15,10 +15,10 @@ import yieldOptimizerABI from "./abis/YieldOptimizer.json";
 // Simple in-memory transaction store for demo purposes
 interface TransactionRecord {
   id: string;
-  type: 'deposit' | 'withdraw' | 'rebalance';
+  type: "deposit" | "withdraw" | "rebalance";
   amount: string;
   hash: string;
-  status: 'pending' | 'confirmed' | 'failed';
+  status: "pending" | "confirmed" | "failed";
   gasUsed?: string;
   gasPrice?: string;
   blockNumber?: number;
@@ -45,7 +45,7 @@ export class BlockchainService {
 
       logger.info("Blockchain provider initialized", {
         chainId: config.CHAIN_ID,
-        rpcUrl: config.RPC_URL
+        rpcUrl: config.RPC_URL,
       });
     } catch (error) {
       logger.error("Failed to initialize blockchain provider", error as Error);
@@ -57,7 +57,7 @@ export class BlockchainService {
     try {
       // Use the single contract address for the current chain
       const contractAddress = config.YIELD_OPTIMIZER_ADDRESS;
-      
+
       if (contractAddress) {
         // Initialize contract on the configured chain
         const provider = this.getProvider(config.CHAIN_ID);
@@ -67,10 +67,10 @@ export class BlockchainService {
           provider
         );
         this.contracts.set(`chain-${config.CHAIN_ID}`, contract);
-        
+
         logger.info("Smart contract initialized", {
           address: contractAddress.slice(0, 10) + "...",
-          chainId: config.CHAIN_ID
+          chainId: config.CHAIN_ID,
         });
       } else {
         logger.warn("No YieldOptimizer contract address configured");
@@ -183,7 +183,8 @@ export class BlockchainService {
       logger.blockchain("Yields fetched", chainId);
 
       return {
-        benqi: Number(yields[0]) / 100, // Convert from basis points
+        aave: Number(yields[0]) / 100, // Map first yield to Aave (was Benqi)
+        benqi: Number(yields[0]) / 100, // Legacy support - same as Aave for compatibility
         traderJoe: Number(yields[1]) / 100,
         yieldYak: Number(yields[2]) / 100,
         lastUpdated: new Date(Number(yields[3]) * 1000),
@@ -211,7 +212,8 @@ export class BlockchainService {
       return {
         shouldRebalance: recommendation[0],
         newAllocation: {
-          benqi: formatEther(recommendation[1]),
+          aave: formatEther(recommendation[1]), // Map first allocation to Aave (was Benqi)
+          benqi: formatEther(recommendation[1]), // Legacy support - same as Aave for compatibility
           traderJoe: formatEther(recommendation[2]),
           yieldYak: formatEther(recommendation[3]),
         },
@@ -304,44 +306,44 @@ export class BlockchainService {
   private initializeDemoTransactions(): void {
     // Add some demo transactions for common test addresses
     const demoAddresses = [
-      '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266', // Hardhat account 0
-      '0x70997970C51812dc3A010C7d01b50e0d17dc79C8', // Hardhat account 1
+      "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", // Hardhat account 0
+      "0x70997970C51812dc3A010C7d01b50e0d17dc79C8", // Hardhat account 1
     ];
 
-    demoAddresses.forEach(address => {
+    demoAddresses.forEach((address) => {
       const transactions: TransactionRecord[] = [
         {
           id: `${address}-1`,
-          type: 'deposit',
-          amount: '10.0',
-          hash: '0x' + '1'.repeat(64),
-          status: 'confirmed',
-          gasUsed: '150000',
-          gasPrice: '25',
+          type: "deposit",
+          amount: "10.0",
+          hash: "0x" + "1".repeat(64),
+          status: "confirmed",
+          gasUsed: "150000",
+          gasPrice: "25",
           blockNumber: 100,
           timestamp: new Date(Date.now() - 86400000 * 7), // 7 days ago
           address,
         },
         {
           id: `${address}-2`,
-          type: 'rebalance',
-          amount: '0',
-          hash: '0x' + '2'.repeat(64),
-          status: 'confirmed',
-          gasUsed: '200000',
-          gasPrice: '25',
+          type: "rebalance",
+          amount: "0",
+          hash: "0x" + "2".repeat(64),
+          status: "confirmed",
+          gasUsed: "200000",
+          gasPrice: "25",
           blockNumber: 150,
           timestamp: new Date(Date.now() - 86400000 * 3), // 3 days ago
           address,
         },
         {
           id: `${address}-3`,
-          type: 'deposit',
-          amount: '5.0',
-          hash: '0x' + '3'.repeat(64),
-          status: 'confirmed',
-          gasUsed: '150000',
-          gasPrice: '30',
+          type: "deposit",
+          amount: "5.0",
+          hash: "0x" + "3".repeat(64),
+          status: "confirmed",
+          gasUsed: "150000",
+          gasPrice: "30",
           blockNumber: 200,
           timestamp: new Date(Date.now() - 86400000), // 1 day ago
           address,
@@ -352,13 +354,17 @@ export class BlockchainService {
   }
 
   // Add a transaction to history (or update if it exists)
-  addTransaction(transaction: Omit<TransactionRecord, 'id' | 'timestamp'>): void {
+  addTransaction(
+    transaction: Omit<TransactionRecord, "id" | "timestamp">
+  ): void {
     const address = transaction.address.toLowerCase();
     const existingTxs = this.transactionHistory.get(address) || [];
-    
+
     // Check if transaction with same hash already exists
-    const existingIndex = existingTxs.findIndex(tx => tx.hash === transaction.hash);
-    
+    const existingIndex = existingTxs.findIndex(
+      (tx) => tx.hash === transaction.hash
+    );
+
     if (existingIndex !== -1) {
       // Update existing transaction
       existingTxs[existingIndex] = {
@@ -366,9 +372,9 @@ export class BlockchainService {
         ...transaction,
         timestamp: existingTxs[existingIndex].timestamp, // Keep original timestamp
       };
-      
-      logger.info('Transaction updated in history', {
-        address: address.slice(0, 8) + '...',
+
+      logger.info("Transaction updated in history", {
+        address: address.slice(0, 8) + "...",
         type: transaction.type,
         hash: transaction.hash,
         status: transaction.status,
@@ -382,34 +388,43 @@ export class BlockchainService {
       };
 
       existingTxs.unshift(newTransaction); // Add to beginning
-      
-      logger.info('Transaction added to history', {
-        address: address.slice(0, 8) + '...',
+
+      logger.info("Transaction added to history", {
+        address: address.slice(0, 8) + "...",
         type: transaction.type,
         hash: transaction.hash,
       });
     }
-    
+
     this.transactionHistory.set(address, existingTxs);
   }
 
   // Get user transaction history
-  getUserTransactionHistory(address: string, limit: number = 50): TransactionRecord[] {
-    const transactions = this.transactionHistory.get(address.toLowerCase()) || [];
+  getUserTransactionHistory(
+    address: string,
+    limit: number = 50
+  ): TransactionRecord[] {
+    const transactions =
+      this.transactionHistory.get(address.toLowerCase()) || [];
     return transactions.slice(0, limit);
   }
 
   // Update transaction status
-  updateTransactionStatus(address: string, hash: string, status: 'confirmed' | 'failed', blockNumber?: number): void {
+  updateTransactionStatus(
+    address: string,
+    hash: string,
+    status: "confirmed" | "failed",
+    blockNumber?: number
+  ): void {
     const transactions = this.transactionHistory.get(address.toLowerCase());
     if (transactions) {
-      const tx = transactions.find(t => t.hash === hash);
+      const tx = transactions.find((t) => t.hash === hash);
       if (tx) {
         tx.status = status;
         if (blockNumber) tx.blockNumber = blockNumber;
-        logger.info('Transaction status updated', {
-          address: address.slice(0, 8) + '...',
-          hash: hash.slice(0, 10) + '...',
+        logger.info("Transaction status updated", {
+          address: address.slice(0, 8) + "...",
+          hash: hash.slice(0, 10) + "...",
           status,
         });
       }

@@ -28,7 +28,8 @@ export interface RiskAssessmentAnswers {
 
 // Portfolio allocation strategy
 export interface AllocationStrategy {
-  benqi: number; // Percentage (0-100)
+  aave: number; // Percentage (0-100) - Replaces benqi
+  benqi?: number; // Legacy support (not used in allocations)
   traderJoe: number;
   yieldYak: number;
   rationale: string;
@@ -142,35 +143,35 @@ export class AIService {
       const marketData =
         currentMarketData || (await defiDataService.getAllProtocolData());
 
-      // Base allocations by risk profile
+      // Base allocations by risk profile (Aave replaces Benqi)
       const baseAllocations = {
-        Conservative: { benqi: 70, traderJoe: 30, yieldYak: 0 },
-        Balanced: { benqi: 40, traderJoe: 40, yieldYak: 20 },
-        Aggressive: { benqi: 20, traderJoe: 30, yieldYak: 50 },
+        Conservative: { aave: 70, traderJoe: 30, yieldYak: 0 },
+        Balanced: { aave: 40, traderJoe: 40, yieldYak: 20 },
+        Aggressive: { aave: 20, traderJoe: 30, yieldYak: 50 },
       };
 
       const riskProfile = this.getRiskProfile(riskScore);
       let allocation = { ...baseAllocations[riskProfile] };
 
       // Adjust based on current market conditions
-      const benqiData = marketData.find((p) => p.protocol === "benqi");
+      const aaveData = marketData.find((p) => p.protocol === "aave");
       const traderJoeData = marketData.find((p) => p.protocol === "traderjoe");
       const yieldYakData = marketData.find((p) => p.protocol === "yieldyak");
 
-      if (benqiData && traderJoeData && yieldYakData) {
+      if (aaveData && traderJoeData && yieldYakData) {
         // Calculate yield-adjusted allocation (±10% adjustment based on relative yields)
         const avgYield =
-          (benqiData.apy + traderJoeData.apy + yieldYakData.apy) / 3;
+          (aaveData.apy + traderJoeData.apy + yieldYakData.apy) / 3;
 
-        const benqiAdjustment = ((benqiData.apy - avgYield) / avgYield) * 10;
+        const aaveAdjustment = ((aaveData.apy - avgYield) / avgYield) * 10;
         const traderJoeAdjustment =
           ((traderJoeData.apy - avgYield) / avgYield) * 10;
         const yieldYakAdjustment =
           ((yieldYakData.apy - avgYield) / avgYield) * 10;
 
-        allocation.benqi = Math.max(
+        allocation.aave = Math.max(
           5,
-          Math.min(85, allocation.benqi + benqiAdjustment)
+          Math.min(85, allocation.aave + aaveAdjustment)
         );
         allocation.traderJoe = Math.max(
           5,
@@ -183,15 +184,15 @@ export class AIService {
 
         // Normalize to 100%
         const total =
-          allocation.benqi + allocation.traderJoe + allocation.yieldYak;
-        allocation.benqi = (allocation.benqi / total) * 100;
+          allocation.aave + allocation.traderJoe + allocation.yieldYak;
+        allocation.aave = (allocation.aave / total) * 100;
         allocation.traderJoe = (allocation.traderJoe / total) * 100;
         allocation.yieldYak = (allocation.yieldYak / total) * 100;
       }
 
       // Calculate expected APY
       const expectedAPY =
-        allocation.benqi * (benqiData?.apy || 5.2) +
+        allocation.aave * (aaveData?.apy || 5.5) +
         allocation.traderJoe * (traderJoeData?.apy || 8.7) +
         allocation.yieldYak * (yieldYakData?.apy || 12.4);
 
@@ -203,14 +204,19 @@ export class AIService {
       );
 
       const strategy: AllocationStrategy = {
-        benqi: Math.round(allocation.benqi),
+        aave: Math.round(allocation.aave),
         traderJoe: Math.round(allocation.traderJoe),
         yieldYak: Math.round(allocation.yieldYak),
         rationale,
         expectedAPY: expectedAPY / 100,
-        riskLevel: riskProfile === "Conservative" ? "low" : 
-                   riskProfile === "Balanced" ? "medium" : 
-                   riskProfile === "Aggressive" ? "high" : "low",
+        riskLevel:
+          riskProfile === "Conservative"
+            ? "low"
+            : riskProfile === "Balanced"
+            ? "medium"
+            : riskProfile === "Aggressive"
+            ? "high"
+            : "low",
       };
 
       logger.ai("Allocation strategy generated", strategy.expectedAPY, {
@@ -226,21 +232,21 @@ export class AIService {
       // Fallback to default allocation
       const defaultAllocations = {
         Conservative: {
-          benqi: 70,
+          aave: 70,
           traderJoe: 30,
           yieldYak: 0,
           expectedAPY: 0.065,
           riskLevel: "low" as const,
         },
         Balanced: {
-          benqi: 40,
+          aave: 40,
           traderJoe: 40,
           yieldYak: 20,
           expectedAPY: 0.088,
           riskLevel: "medium" as const,
         },
         Aggressive: {
-          benqi: 20,
+          aave: 20,
           traderJoe: 30,
           yieldYak: 50,
           expectedAPY: 0.112,
@@ -263,10 +269,10 @@ export class AIService {
    */
   private generateAllocationRationale(
     riskProfile: string,
-    allocation: { benqi: number; traderJoe: number; yieldYak: number },
+    allocation: { aave: number; traderJoe: number; yieldYak: number },
     marketData: YieldData[]
   ): string {
-    const benqiAPY = marketData.find((p) => p.protocol === "benqi")?.apy || 5.2;
+    const aaveAPY = marketData.find((p) => p.protocol === "aave")?.apy || 5.5;
     const traderJoeAPY =
       marketData.find((p) => p.protocol === "traderjoe")?.apy || 8.7;
     const yieldYakAPY =
@@ -274,10 +280,10 @@ export class AIService {
 
     let rationale = `This ${riskProfile} allocation strategy `;
 
-    if (allocation.benqi >= 50) {
+    if (allocation.aave >= 50) {
       rationale += `prioritizes stability with ${
-        allocation.benqi
-      }% in Benqi lending (${benqiAPY.toFixed(1)}% APY), `;
+        allocation.aave
+      }% in Aave V3 lending (${aaveAPY.toFixed(1)}% APY), `;
     }
 
     if (allocation.traderJoe >= 30) {

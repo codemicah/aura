@@ -140,9 +140,9 @@ export class PortfolioController {
       );
       const currentAllocation = currentPortfolio.allocation;
 
-      // Simple weighted average APY calculation
+      // Simple weighted average APY calculation using Aave instead of Benqi
       const currentAPY =
-        (parseFloat(currentAllocation.benqiAmount) * currentYields.benqi +
+        (parseFloat(currentAllocation.aaveAmount || "0") * currentYields.aave +
           parseFloat(currentAllocation.traderJoeAmount) *
             currentYields.traderJoe +
           parseFloat(currentAllocation.yieldYakAmount) *
@@ -150,7 +150,8 @@ export class PortfolioController {
         parseFloat(currentPortfolio.estimatedValue);
 
       const newAPY =
-        (parseFloat(recommendation.newAllocation.benqi) * currentYields.benqi +
+        (parseFloat(recommendation.newAllocation.aave || "0") *
+          currentYields.aave +
           parseFloat(recommendation.newAllocation.traderJoe) *
             currentYields.traderJoe +
           parseFloat(recommendation.newAllocation.yieldYak) *
@@ -272,7 +273,10 @@ export class PortfolioController {
       }
 
       // Get transactions from in-memory store (for demo purposes)
-      const transactions = blockchainService.getUserTransactionHistory(address, limit);
+      const transactions = blockchainService.getUserTransactionHistory(
+        address,
+        limit
+      );
 
       const response: ApiResponse = {
         success: true,
@@ -297,7 +301,8 @@ export class PortfolioController {
   async saveTransaction(req: Request, res: Response, next: NextFunction) {
     try {
       const { address } = req.params;
-      const { type, amount, hash, status, gasUsed, gasPrice, blockNumber } = req.body;
+      const { type, amount, hash, status, gasUsed, gasPrice, blockNumber } =
+        req.body;
 
       if (!blockchainService.isValidAddress(address)) {
         throw new ValidationError("Invalid Ethereum address", "address");
@@ -312,7 +317,7 @@ export class PortfolioController {
         type,
         amount,
         hash,
-        status: status || 'pending',
+        status: status || "pending",
         gasUsed,
         gasPrice,
         blockNumber,
@@ -321,9 +326,12 @@ export class PortfolioController {
 
       // Create a portfolio snapshot after transaction
       try {
-        const portfolio = await blockchainService.getUserPortfolio(address, config.CHAIN_ID);
+        const portfolio = await blockchainService.getUserPortfolio(
+          address,
+          config.CHAIN_ID
+        );
         const avaxPrice = await defiDataService.getAVAXPrice();
-        
+
         if (portfolio && parseFloat(portfolio.estimatedValue) > 0) {
           // Get or create user profile
           let profile = await databaseService.getUserProfile(address);
@@ -332,7 +340,7 @@ export class PortfolioController {
             await databaseService.createUserProfile({
               address,
               riskScore: 50, // Default middle risk
-              riskProfile: 'Balanced' as const,
+              riskProfile: "Balanced" as const,
               totalDeposited: portfolio.profile?.totalDeposited || "0",
               lastRebalance: new Date(),
               autoRebalance: true,
@@ -351,20 +359,21 @@ export class PortfolioController {
             });
             profile = await databaseService.getUserProfile(address);
           }
-          
+
           // Create snapshot
           if (profile && profile.id) {
             await databaseService.createPortfolioSnapshot({
               userId: profile.id,
               totalValue: portfolio.estimatedValue,
-              benqiAmount: portfolio.allocation.benqiAmount,
+              aaveAmount: portfolio.allocation.aaveAmount || "0", // Use Aave instead of Benqi
+              benqiAmount: "0", // Legacy field, set to 0
               traderJoeAmount: portfolio.allocation.traderJoeAmount,
               yieldYakAmount: portfolio.allocation.yieldYakAmount,
               estimatedAPY: portfolio.estimatedAPY || 0,
               avaxPrice,
             });
           }
-          
+
           logger.info("Portfolio snapshot created after transaction", {
             address: address.slice(0, 8) + "...",
             type,
@@ -373,7 +382,10 @@ export class PortfolioController {
         }
       } catch (snapshotError) {
         // Log error but don't fail the transaction save
-        logger.error("Failed to create portfolio snapshot", snapshotError as Error);
+        logger.error(
+          "Failed to create portfolio snapshot",
+          snapshotError as Error
+        );
       }
 
       const response: ApiResponse = {
@@ -384,7 +396,7 @@ export class PortfolioController {
             type,
             amount,
             hash,
-            status: status || 'pending',
+            status: status || "pending",
             address,
           },
         },
@@ -415,37 +427,46 @@ export class PortfolioController {
       });
 
       // Get snapshots from database
-      let snapshots = await databaseService.getPortfolioSnapshots(address, days);
+      let snapshots = await databaseService.getPortfolioSnapshots(
+        address,
+        days
+      );
 
       // If no snapshots exist, create mock historical data
       if (!snapshots || snapshots.length === 0) {
         try {
           // Try to get current portfolio data
-          const portfolio = await blockchainService.getUserPortfolio(address, config.CHAIN_ID).catch(() => null);
-          const avaxPrice = await defiDataService.getAVAXPrice().catch(() => 45); // Default AVAX price
-          
+          const portfolio = await blockchainService
+            .getUserPortfolio(address, config.CHAIN_ID)
+            .catch(() => null);
+          const avaxPrice = await defiDataService
+            .getAVAXPrice()
+            .catch(() => 45); // Default AVAX price
+
           // Create mock historical data for the past days
           const mockSnapshots = [];
-          const currentValue = portfolio ? parseFloat(portfolio.estimatedValue || '0') : 1000; // Default value if no portfolio
-          
+          const currentValue = portfolio
+            ? parseFloat(portfolio.estimatedValue || "0")
+            : 1000; // Default value if no portfolio
+
           for (let i = 0; i < days; i++) {
             // Simulate daily variation (-2% to +3%)
             const variation = 1 + (Math.random() * 0.05 - 0.02);
             const dayValue = currentValue * Math.pow(variation, days - i);
-            
+
             const date = new Date();
             date.setDate(date.getDate() - i);
-            
+
             mockSnapshots.push({
               snapshotDate: date.toISOString(),
               totalValue: dayValue.toString(),
-              benqiAmount: (dayValue * 0.4).toString(), // 40% in Benqi
+              aaveAmount: (dayValue * 0.4).toString(), // 40% in Aave (replaces Benqi)
               traderJoeAmount: (dayValue * 0.35).toString(), // 35% in TraderJoe
               yieldYakAmount: (dayValue * 0.25).toString(), // 25% in YieldYak
               avaxPrice: avaxPrice * (1 + (Math.random() * 0.02 - 0.01)), // Small price variation
             });
           }
-          
+
           snapshots = mockSnapshots.reverse(); // Reverse to have oldest first
         } catch (err) {
           logger.error("Error creating mock snapshots", err as Error);
@@ -454,13 +475,19 @@ export class PortfolioController {
       }
 
       // Format snapshots for frontend - ensure snapshots is always an array
-      const history = (snapshots || []).map(snapshot => ({
+      const history = (snapshots || []).map((snapshot) => ({
         date: snapshot.snapshotDate,
-        totalValue: parseFloat(snapshot.totalValue || '0') * (snapshot.avaxPrice || 45),
+        totalValue:
+          parseFloat(snapshot.totalValue || "0") * (snapshot.avaxPrice || 45),
         allocation: {
-          benqi: parseFloat(snapshot.benqiAmount || '0') * (snapshot.avaxPrice || 45),
-          traderJoe: parseFloat(snapshot.traderJoeAmount || '0') * (snapshot.avaxPrice || 45),
-          yieldYak: parseFloat(snapshot.yieldYakAmount || '0') * (snapshot.avaxPrice || 45),
+          aave:
+            parseFloat(snapshot.aaveAmount || "0") * (snapshot.avaxPrice || 45), // Use Aave instead of Benqi
+          traderJoe:
+            parseFloat(snapshot.traderJoeAmount || "0") *
+            (snapshot.avaxPrice || 45),
+          yieldYak:
+            parseFloat(snapshot.yieldYakAmount || "0") *
+            (snapshot.avaxPrice || 45),
         },
       }));
 
@@ -506,18 +533,33 @@ export class PortfolioController {
   async saveUserProfile(req: Request, res: Response, next: NextFunction) {
     try {
       const { address } = req.params;
-      const { riskScore, riskProfile, preferences, age, income, expenses, goals, riskTolerance } = req.body;
+      const {
+        riskScore,
+        riskProfile,
+        preferences,
+        age,
+        income,
+        expenses,
+        goals,
+        riskTolerance,
+      } = req.body;
 
       if (!blockchainService.isValidAddress(address)) {
         throw new ValidationError("Invalid Ethereum address", "address");
       }
 
       if (riskScore === undefined || !riskProfile) {
-        throw new ValidationError("Risk score and profile are required", "body");
+        throw new ValidationError(
+          "Risk score and profile are required",
+          "body"
+        );
       }
 
       if (riskScore < 0 || riskScore > 100) {
-        throw new ValidationError("Risk score must be between 0 and 100", "riskScore");
+        throw new ValidationError(
+          "Risk score must be between 0 and 100",
+          "riskScore"
+        );
       }
 
       logger.info("Saving user profile", {
@@ -534,7 +576,13 @@ export class PortfolioController {
         await databaseService.updateUserProfile(address, {
           riskScore,
           riskProfile,
-          preferences: preferences || { age, income, expenses, goals, riskTolerance },
+          preferences: preferences || {
+            age,
+            income,
+            expenses,
+            goals,
+            riskTolerance,
+          },
         });
       } else {
         // Create new profile
@@ -545,7 +593,13 @@ export class PortfolioController {
           totalDeposited: "0",
           lastRebalance: new Date(),
           autoRebalance: true,
-          preferences: preferences || { age, income, expenses, goals, riskTolerance },
+          preferences: preferences || {
+            age,
+            income,
+            expenses,
+            goals,
+            riskTolerance,
+          },
         });
       }
 
@@ -555,7 +609,9 @@ export class PortfolioController {
       const response: ApiResponse = {
         success: true,
         data: {
-          message: existingProfile ? "Profile updated successfully" : "Profile created successfully",
+          message: existingProfile
+            ? "Profile updated successfully"
+            : "Profile created successfully",
           profile: updatedProfile,
         },
         timestamp: new Date(),
