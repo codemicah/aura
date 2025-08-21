@@ -153,7 +153,8 @@ export function InvestmentFlow() {
                 <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full">
                   Confidence:{" "}
                   {Math.round(
-                    (aiFlow.recommendations.recommendation?.confidence ?? 0.5) * 100
+                    (aiFlow.recommendations.recommendation?.confidence ?? 0.5) *
+                      100
                   )}
                   %
                 </span>
@@ -177,7 +178,9 @@ export function InvestmentFlow() {
                       : "bg-red-100 text-red-700"
                   }`}
                 >
-                  Risk: {aiFlow.recommendations.recommendation?.riskLevel || 'unknown'}
+                  Risk:{" "}
+                  {aiFlow.recommendations.recommendation?.riskLevel ||
+                    "unknown"}
                 </span>
               </div>
             </div>
@@ -293,10 +296,10 @@ export function InvestmentFlow() {
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-700">
-                        Benqi (Stable Lending)
+                        Aave (Stable Lending)
                       </span>
                       <span className="font-semibold text-gray-900">
-                        {aiFlow.allocation.allocation.benqi}%
+                        {aiFlow.allocation.allocation.aave}%
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -375,12 +378,12 @@ export function InvestmentFlow() {
                     </h4>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-700 font-medium">Benqi</span>
+                        <span className="text-gray-700 font-medium">Aave</span>
                         <span className="text-gray-900 font-semibold">
-                          {portfolio.portfolio.allocation?.benqiPercentage?.toFixed(
+                          {portfolio.portfolio.allocation?.aavePercentage?.toFixed(
                             1
                           ) || "0.0"}
-                          % → {aiFlow.allocation.allocation.benqi}%
+                          % → {aiFlow.allocation.allocation.aave}%
                         </span>
                       </div>
                       <div className="flex justify-between">

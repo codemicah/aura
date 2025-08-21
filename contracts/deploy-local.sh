@@ -9,7 +9,7 @@ fi
 
 # Deploy contract
 echo "Deploying contract..."
-DEPLOY_OUTPUT=$(forge script script/Deploy.s.sol --rpc-url http://localhost:8545 --broadcast 2>&1)
+DEPLOY_OUTPUT=$(IS_FORK=true forge script script/Deploy.s.sol --rpc-url http://localhost:8545 --broadcast 2>&1)
 
 # Extract deployed address
 DEPLOYED_ADDRESS=$(echo "$DEPLOY_OUTPUT" | grep "YieldOptimizer deployed at:" | sed -n 's/.*YieldOptimizer deployed at: \(0x[a-fA-F0-9]*\).*/\1/p' | head -1)

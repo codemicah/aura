@@ -1,241 +1,280 @@
 // Hooks for portfolio tracking and management
-import { useState, useEffect, useCallback } from 'react'
-import { useAccount, useBalance } from 'wagmi'
-import { apiClient } from '@/utils/api'
+import { useState, useEffect, useCallback } from "react";
+import { useAccount, useBalance } from "wagmi";
+import { apiClient } from "@/utils/api";
 
 export interface Portfolio {
-  totalValue: string
-  totalValueUSD: number
+  totalValue: string;
+  totalValueUSD: number;
   allocation: {
-    benqiAmount: string
-    traderJoeAmount: string
-    yieldYakAmount: string
-    benqiPercentage: number
-    traderJoePercentage: number
-    yieldYakPercentage: number
-  }
-  estimatedAPY: number
+    aaveAmount: string;
+    traderJoeAmount: string;
+    yieldYakAmount: string;
+    aavePercentage: number;
+    traderJoePercentage: number;
+    yieldYakPercentage: number;
+  };
+  estimatedAPY: number;
   performance: {
-    dailyReturn: number
-    weeklyReturn: number
-    monthlyReturn: number
-    totalReturn: number
-    totalReturnUSD: string
-  }
-  lastUpdated: Date
+    dailyReturn: number;
+    weeklyReturn: number;
+    monthlyReturn: number;
+    totalReturn: number;
+    totalReturnUSD: string;
+  };
+  lastUpdated: Date;
 }
 
 export interface Transaction {
-  id: string
-  type: 'deposit' | 'withdraw' | 'rebalance'
-  amount: string
-  hash: string
-  status: 'pending' | 'confirmed' | 'failed'
-  gasUsed?: string
-  gasPrice?: string
-  blockNumber?: number
-  timestamp: Date
+  id: string;
+  type: "deposit" | "withdraw" | "rebalance";
+  amount: string;
+  hash: string;
+  status: "pending" | "confirmed" | "failed";
+  gasUsed?: string;
+  gasPrice?: string;
+  blockNumber?: number;
+  timestamp: Date;
 }
 
 export interface PortfolioHistory {
-  date: string
-  totalValue: number
+  date: string;
+  totalValue: number;
   allocation: {
-    benqi: number
-    traderJoe: number
-    yieldYak: number
-  }
+    aave: number;
+    traderJoe: number;
+    yieldYak: number;
+  };
 }
 
 // Hook for portfolio data
 export function usePortfolio() {
-  const { address } = useAccount()
-  const [portfolio, setPortfolio] = useState<Portfolio | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { address } = useAccount();
+  const [portfolio, setPortfolio] = useState<Portfolio | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchPortfolio = useCallback(async () => {
     if (!address) {
-      setPortfolio(null)
-      return
+      setPortfolio(null);
+      return;
     }
 
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
 
     try {
-      const data = await apiClient.getPortfolio(address)
+      const data = await apiClient.getPortfolio(address);
       setPortfolio({
         ...data,
         totalValueUSD: parseFloat(data.totalValue) || 0,
-        lastUpdated: new Date()
-      })
+        lastUpdated: new Date(),
+      });
     } catch (err) {
-      console.error('Failed to fetch portfolio:', err)
-      setError(err instanceof Error ? err.message : 'Failed to fetch portfolio')
+      console.error("Failed to fetch portfolio:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch portfolio"
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [address])
+  }, [address]);
 
   useEffect(() => {
-    fetchPortfolio()
-  }, [fetchPortfolio])
+    fetchPortfolio();
+  }, [fetchPortfolio]);
 
   return {
     portfolio,
     isLoading,
     error,
-    refresh: fetchPortfolio
-  }
+    refresh: fetchPortfolio,
+  };
 }
 
 // Hook for transaction history
 export function useTransactionHistory(limit: number = 50) {
-  const { address } = useAccount()
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { address } = useAccount();
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchTransactions = useCallback(async () => {
     if (!address) {
-      setTransactions([])
-      return
+      setTransactions([]);
+      return;
     }
 
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
 
     try {
-      const data = await apiClient.getTransactions(address, limit)
-      setTransactions(data.map(tx => ({
-        ...tx,
-        timestamp: new Date(tx.timestamp)
-      })))
+      const data = await apiClient.getTransactions(address, limit);
+      setTransactions(
+        data.map((tx) => ({
+          ...tx,
+          timestamp: new Date(tx.timestamp),
+        }))
+      );
     } catch (err) {
-      console.error('Failed to fetch transactions:', err)
-      setError(err instanceof Error ? err.message : 'Failed to fetch transactions')
+      console.error("Failed to fetch transactions:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch transactions"
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [address, limit])
+  }, [address, limit]);
 
   useEffect(() => {
-    fetchTransactions()
-  }, [fetchTransactions])
+    fetchTransactions();
+  }, [fetchTransactions]);
 
   // Auto-refresh pending transactions
   useEffect(() => {
-    const hasPending = transactions.some(tx => tx.status === 'pending')
+    const hasPending = transactions.some((tx) => tx.status === "pending");
     if (hasPending) {
-      const interval = setInterval(fetchTransactions, 5000) // Check every 5 seconds
-      return () => clearInterval(interval)
+      const interval = setInterval(fetchTransactions, 5000); // Check every 5 seconds
+      return () => clearInterval(interval);
     }
-  }, [transactions, fetchTransactions])
+  }, [transactions, fetchTransactions]);
 
   return {
     transactions,
     isLoading,
     error,
-    refresh: fetchTransactions
-  }
+    refresh: fetchTransactions,
+  };
 }
 
 // Hook for portfolio history
 export function usePortfolioHistory(days: number = 30) {
-  const { address } = useAccount()
-  const [history, setHistory] = useState<PortfolioHistory[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { address } = useAccount();
+  const [history, setHistory] = useState<PortfolioHistory[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchHistory = useCallback(async () => {
     if (!address) {
-      setHistory([])
-      return
+      setHistory([]);
+      return;
     }
 
-    setIsLoading(true)
-    setError(null)
+    setIsLoading(true);
+    setError(null);
 
     try {
-      const data = await apiClient.getPortfolioHistory(address, days)
-      setHistory(data)
+      const data = await apiClient.getPortfolioHistory(address, days);
+      // Map benqi to aave in the response for compatibility
+      const mappedData = data.map((item: any) => ({
+        ...item,
+        allocation: {
+          aave: item.allocation.benqi || item.allocation.aave || 0,
+          traderJoe: item.allocation.traderJoe,
+          yieldYak: item.allocation.yieldYak,
+        },
+      }));
+      setHistory(mappedData);
     } catch (err) {
-      console.error('Failed to fetch portfolio history:', err)
-      setError(err instanceof Error ? err.message : 'Failed to fetch history')
+      console.error("Failed to fetch portfolio history:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch history");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }, [address, days])
+  }, [address, days]);
 
   useEffect(() => {
-    fetchHistory()
-  }, [fetchHistory])
+    fetchHistory();
+  }, [fetchHistory]);
 
   return {
     history,
     isLoading,
     error,
-    refresh: fetchHistory
-  }
+    refresh: fetchHistory,
+  };
 }
 
 // Hook for wallet balance
 export function useWalletBalance() {
-  const { address } = useAccount()
-  const { data: balance, isLoading, error } = useBalance({
-    address
-  })
+  const { address } = useAccount();
+  const {
+    data: balance,
+    isLoading,
+    error,
+  } = useBalance({
+    address,
+  });
 
   return {
-    balance: balance ? {
-      value: balance.value,
-      formatted: balance.formatted,
-      symbol: balance.symbol,
-      decimals: balance.decimals
-    } : null,
+    balance: balance
+      ? {
+          value: balance.value,
+          formatted: balance.formatted,
+          symbol: balance.symbol,
+          decimals: balance.decimals,
+        }
+      : null,
     isLoading,
-    error: error?.message || null
-  }
+    error: error?.message || null,
+  };
 }
 
 // Combined portfolio dashboard hook
 export function usePortfolioDashboard() {
-  const portfolio = usePortfolio()
-  const transactions = useTransactionHistory(10) // Last 10 transactions
-  const history = usePortfolioHistory(7) // Last 7 days
-  const walletBalance = useWalletBalance()
+  const portfolio = usePortfolio();
+  const transactions = useTransactionHistory(10); // Last 10 transactions
+  const history = usePortfolioHistory(7); // Last 7 days
+  const walletBalance = useWalletBalance();
 
-  const isLoading = 
-    portfolio.isLoading || 
-    transactions.isLoading || 
-    history.isLoading || 
-    walletBalance.isLoading
+  const isLoading =
+    portfolio.isLoading ||
+    transactions.isLoading ||
+    history.isLoading ||
+    walletBalance.isLoading;
 
-  const error = 
-    portfolio.error || 
-    transactions.error || 
-    history.error || 
-    walletBalance.error
+  const error =
+    portfolio.error ||
+    transactions.error ||
+    history.error ||
+    walletBalance.error;
 
   // Calculate portfolio metrics
   const metrics = {
     totalValueUSD: portfolio.portfolio?.totalValueUSD || 0,
-    totalReturnUSD: parseFloat(portfolio.portfolio?.performance?.totalReturnUSD || '0'),
+    totalReturnUSD: parseFloat(
+      portfolio.portfolio?.performance?.totalReturnUSD || "0"
+    ),
     dailyReturn: portfolio.portfolio?.performance?.dailyReturn || 0,
     weeklyReturn: portfolio.portfolio?.performance?.weeklyReturn || 0,
     monthlyReturn: portfolio.portfolio?.performance?.monthlyReturn || 0,
     estimatedAPY: portfolio.portfolio?.estimatedAPY || 0,
-    walletBalance: walletBalance.balance?.formatted || '0',
-    pendingTransactions: transactions.transactions.filter(tx => tx.status === 'pending').length
-  }
+    walletBalance: walletBalance.balance?.formatted || "0",
+    pendingTransactions: transactions.transactions.filter(
+      (tx) => tx.status === "pending"
+    ).length,
+  };
 
   // Calculate allocation percentages for chart
-  const allocationData = portfolio.portfolio ? [
-    { name: 'Benqi', value: portfolio.portfolio.allocation.benqiPercentage, color: '#4F46E5' },
-    { name: 'TraderJoe', value: portfolio.portfolio.allocation.traderJoePercentage, color: '#EC4899' },
-    { name: 'YieldYak', value: portfolio.portfolio.allocation.yieldYakPercentage, color: '#10B981' }
-  ] : []
+  const allocationData = portfolio.portfolio
+    ? [
+        {
+          name: "Aave",
+          value: portfolio.portfolio.allocation.aavePercentage,
+          color: "#4F46E5",
+        },
+        {
+          name: "TraderJoe",
+          value: portfolio.portfolio.allocation.traderJoePercentage,
+          color: "#EC4899",
+        },
+        {
+          name: "YieldYak",
+          value: portfolio.portfolio.allocation.yieldYakPercentage,
+          color: "#10B981",
+        },
+      ]
+    : [];
 
   return {
     portfolio: portfolio.portfolio,
@@ -250,8 +289,8 @@ export function usePortfolioDashboard() {
       await Promise.all([
         portfolio.refresh(),
         transactions.refresh(),
-        history.refresh()
-      ])
-    }
-  }
+        history.refresh(),
+      ]);
+    },
+  };
 }

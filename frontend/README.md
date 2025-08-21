@@ -41,6 +41,7 @@ src/
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18+
 - npm or yarn
 - MetaMask or Web3 wallet
@@ -81,36 +82,42 @@ NEXT_PUBLIC_APP_NAME=AURA
 ## 🎨 Key Features
 
 ### Landing Page
+
 - Modern web3 design with animations
 - Live protocol yields display
 - Demo personas showcase
 - Interactive feature cards
 
 ### Risk Assessment
+
 - Multi-step questionnaire
 - Dynamic risk score calculation
 - Personalized strategy generation
 - Real-time validation
 
 ### Dashboard
+
 - Portfolio overview with current value
 - Allocation breakdown by protocol
 - Performance metrics and charts
 - One-click rebalancing
 
 ### Investment Flow
+
 - Guided deposit process
 - AI-powered allocation recommendations
 - Transaction status tracking
 - Gas estimation
 
 ### Analytics
+
 - Historical performance charts
 - Risk metrics (Sharpe ratio, drawdown)
 - Benchmark comparisons
 - Protocol-specific analytics
 
 ### Education
+
 - Interactive tutorials
 - DeFi glossary
 - Protocol guides
@@ -119,6 +126,7 @@ NEXT_PUBLIC_APP_NAME=AURA
 ## 🔗 Web3 Integration
 
 ### Wagmi Configuration
+
 ```typescript
 // Supported chains
 - Avalanche C-Chain (43114)
@@ -132,6 +140,7 @@ NEXT_PUBLIC_APP_NAME=AURA
 ```
 
 ### Smart Contract Hooks
+
 - `useYieldOptimizer` - Main contract interaction
 - `usePortfolio` - Portfolio data fetching
 - `useRebalance` - Rebalancing operations
@@ -140,26 +149,30 @@ NEXT_PUBLIC_APP_NAME=AURA
 ## 🎯 Custom Hooks
 
 ### useAI
+
 ```typescript
 // AI agent integration
-const { riskScore, allocation, recommendations } = useAI()
+const { riskScore, allocation, recommendations } = useAI();
 ```
 
 ### useMarketData
+
 ```typescript
 // Real-time market data
-const { yields, avaxPrice, protocolData } = useMarketData()
+const { yields, avaxPrice, protocolData } = useMarketData();
 ```
 
 ### usePortfolio
+
 ```typescript
 // Portfolio management
-const { portfolio, performance, history } = usePortfolio(address)
+const { portfolio, performance, history } = usePortfolio(address);
 ```
 
 ## 🎨 UI Components
 
 ### Core Components
+
 - **ConnectButton** - Wallet connection with network switching
 - **RiskAssessment** - Interactive risk questionnaire
 - **PortfolioOverview** - Real-time portfolio display
@@ -167,6 +180,7 @@ const { portfolio, performance, history } = usePortfolio(address)
 - **PerformanceChart** - Interactive performance visualization
 
 ### Layout Components
+
 - **Header** - Navigation and wallet status
 - **MobileNav** - Responsive mobile navigation
 - **SkeletonLoaders** - Loading states
@@ -200,25 +214,28 @@ npm run type-check  # TypeScript validation
 
 Three demo personas available for testing:
 
-| Persona | Risk Level | Allocation |
-|---------|------------|------------|
-| Sarah | Conservative | 70% Benqi, 30% TraderJoe |
-| Mike | Balanced | 40% Benqi, 40% TraderJoe, 20% YieldYak |
-| Jennifer | Aggressive | 20% Benqi, 30% TraderJoe, 50% YieldYak |
+| Persona  | Risk Level   | Allocation                            |
+| -------- | ------------ | ------------------------------------- |
+| Sarah    | Conservative | 70% Aave, 30% TraderJoe               |
+| Mike     | Balanced     | 40% Aave, 40% TraderJoe, 20% YieldYak |
+| Jennifer | Aggressive   | 20% Aave, 30% TraderJoe, 50% YieldYak |
 
 ## 🚨 Troubleshooting
 
 **Wallet connection issues**
+
 - Ensure NEXT_PUBLIC_WC_PROJECT_ID is set
 - Check wallet is on Avalanche network
 - Clear browser cache and retry
 
 **Contract interaction errors**
+
 - Verify contract is deployed
 - Check NEXT_PUBLIC_YIELD_OPTIMIZER_ADDRESS
 - Ensure sufficient AVAX for gas
 
 **API connection failed**
+
 - Verify backend is running on port 3001
 - Check NEXT_PUBLIC_API_URL setting
 - Confirm CORS is configured
@@ -248,4 +265,4 @@ Three demo personas available for testing:
 
 ---
 
-*AURA Frontend - Autonomous DeFi Management Interface*
+_AURA Frontend - Autonomous DeFi Management Interface_
