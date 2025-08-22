@@ -26,7 +26,10 @@ interface ITraderJoe {
         uint256 amountAVAXMin,
         address to,
         uint256 deadline
-    ) external payable returns (uint256 amountToken, uint256 amountAVAX, uint256 liquidity);
+    )
+        external
+        payable
+        returns (uint256 amountToken, uint256 amountAVAX, uint256 liquidity);
 
     /**
      * @dev Remove liquidity from AVAX/Token pair
@@ -87,10 +90,10 @@ interface ITraderJoe {
      * @return reserveA Reserve amount of tokenA
      * @return reserveB Reserve amount of tokenB
      */
-    function getReserves(address tokenA, address tokenB)
-        external
-        view
-        returns (uint256 reserveA, uint256 reserveB);
+    function getReserves(
+        address tokenA,
+        address tokenB
+    ) external view returns (uint256 reserveA, uint256 reserveB);
 
     /**
      * @dev Calculate optimal amounts for adding liquidity
@@ -120,6 +123,17 @@ interface ITraderJoe {
     function getPoolAPY(address pair) external view returns (uint256 apy);
 
     /**
+     * @dev Get amounts out for a given input amount and path
+     * @param amountIn Input amount
+     * @param path Array of token addresses representing the swap path
+     * @return amounts Array of output amounts for each step in the path
+     */
+    function getAmountsOut(
+        uint256 amountIn,
+        address[] calldata path
+    ) external view returns (uint256[] memory amounts);
+
+    /**
      * @dev Get the factory address
      * @return factory The factory contract address
      */
@@ -143,7 +157,10 @@ interface ITraderJoeFactory {
      * @param tokenB Second token address
      * @return pair The pair contract address
      */
-    function getPair(address tokenA, address tokenB) external view returns (address pair);
+    function getPair(
+        address tokenA,
+        address tokenB
+    ) external view returns (address pair);
 
     /**
      * @dev Create a new trading pair
@@ -151,7 +168,10 @@ interface ITraderJoeFactory {
      * @param tokenB Second token address
      * @return pair The new pair contract address
      */
-    function createPair(address tokenA, address tokenB) external returns (address pair);
+    function createPair(
+        address tokenA,
+        address tokenB
+    ) external returns (address pair);
 }
 
 /**
@@ -194,7 +214,9 @@ interface ITraderJoePair {
      * @return amount0 Amount of token0 received
      * @return amount1 Amount of token1 received
      */
-    function burn(address to) external returns (uint256 amount0, uint256 amount1);
+    function burn(
+        address to
+    ) external returns (uint256 amount0, uint256 amount1);
 
     /**
      * @dev Mint LP tokens by providing liquidity

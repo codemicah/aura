@@ -26,6 +26,9 @@
   "author": "AURA Team",
   "license": "MIT",
   "dependencies": {
+    "@aave/client": "^0.4.0",
+    "@aave/contract-helpers": "^1.36.1",
+    "@aave/math-utils": "^1.36.1",
     "@types/swagger-ui-express": "^4.1.8",
     "@types/yamljs": "^0.2.34",
     "cors": "^2.8.5",
@@ -37,6 +40,7 @@
     "morgan": "^1.10.1",
     "sqlite3": "^5.1.7",
     "swagger-ui-express": "^5.0.1",
+    "viem": "^2.34.0",
     "yamljs": "^0.3.0"
   },
   "devDependencies": {

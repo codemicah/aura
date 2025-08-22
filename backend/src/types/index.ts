@@ -38,10 +38,12 @@ export interface Portfolio {
 }
 
 export interface AllocationData {
-  benqiAmount: string;
+  aaveAmount: string;
+  benqiAmount: string; // Legacy support
   traderJoeAmount: string;
   yieldYakAmount: string;
-  benqiPercentage: number;
+  aavePercentage: number;
+  benqiPercentage: number; // Legacy support
   traderJoePercentage: number;
   yieldYakPercentage: number;
 }
@@ -55,7 +57,7 @@ export interface PerformanceData {
 }
 
 export interface YieldData {
-  protocol: "benqi" | "traderjoe" | "yieldyak";
+  protocol: "aave" | "benqi" | "traderjoe" | "yieldyak";
   apy: number;
   tvl: string;
   lastUpdated: Date;

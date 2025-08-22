@@ -67,9 +67,11 @@ export class DeFiDataService {
           },
         ];
       }
-      
+
       // Fallback for when contract is not available
-      logger.warn("Smart contract not available, using fallback TraderJoe data");
+      logger.warn(
+        "Smart contract not available, using fallback TraderJoe data"
+      );
       return [
         {
           protocol: "traderjoe",
@@ -93,31 +95,16 @@ export class DeFiDataService {
     }
   }
 
-  async getBenqiData(): Promise<YieldData[]> {
+  // Legacy Benqi support (kept for future use but not used in active allocations)
+  private async getBenqiData(): Promise<YieldData[]> {
     try {
-      // Try to get real yields from smart contract first
-      if (blockchainService.hasContract()) {
-        const yields = await blockchainService.getCurrentYields();
-        return [
-          {
-            protocol: "benqi",
-            apy: yields.benqi,
-            tvl: "8500000", // TVL would need separate data source
-            lastUpdated: yields.lastUpdated,
-            isActive: true,
-          },
-        ];
-      }
-      
-      // Fallback for when contract is not available
-      logger.warn("Smart contract not available, using fallback Benqi data");
       return [
         {
           protocol: "benqi",
           apy: 5.2,
           tvl: "8500000",
           lastUpdated: new Date(),
-          isActive: false,
+          isActive: false, // Always inactive to prevent use in allocations
         },
       ];
     } catch (error) {
@@ -127,6 +114,51 @@ export class DeFiDataService {
           protocol: "benqi",
           apy: 5.2, // Fallback value
           tvl: "8500000",
+          lastUpdated: new Date(),
+          isActive: false,
+        },
+      ];
+    }
+  }
+
+  // Active Aave V3 integration (replaces Benqi in allocations)
+  async getAaveData(): Promise<YieldData[]> {
+    try {
+      // Try to get real yields from smart contract first
+      if (blockchainService.hasContract()) {
+        const yields = await blockchainService.getCurrentYields();
+        return [
+          {
+            protocol: "aave",
+            apy: yields.aave || 5.5, // Use aave field only, no fallback to benqi
+            tvl: "10000000000", // $10B+ TVL for Aave V3
+            lastUpdated: yields.lastUpdated,
+            isActive: true,
+          },
+        ];
+      }
+
+      // Fallback for when contract is not available
+      logger.warn("Smart contract not available, using fallback Aave data");
+      const baseAPY = 5.5;
+      const variation = (Math.random() - 0.5) * 1.0; // ±0.5% variation
+
+      return [
+        {
+          protocol: "aave",
+          apy: Math.max(3.0, baseAPY + variation), // Minimum 3% APY
+          tvl: "10000000000", // $10B+ TVL
+          lastUpdated: new Date(),
+          isActive: false,
+        },
+      ];
+    } catch (error) {
+      logger.error("Failed to fetch Aave data", error as Error);
+      return [
+        {
+          protocol: "aave",
+          apy: 5.5, // Fallback value
+          tvl: "10000000000",
           lastUpdated: new Date(),
           isActive: false,
         },
@@ -149,9 +181,11 @@ export class DeFiDataService {
           },
         ];
       }
-      
+
       // Fallback for testnet where YieldYak is not available
-      logger.warn("YieldYak data not available on testnet, using simulated data");
+      logger.warn(
+        "YieldYak data not available on testnet, using simulated data"
+      );
       return [
         {
           protocol: "yieldyak",
@@ -177,18 +211,23 @@ export class DeFiDataService {
 
   async getAllProtocolData(): Promise<YieldData[]> {
     try {
-      const [traderJoeData, benqiData, yieldYakData] = await Promise.all([
+      // Active protocols: Aave (replaces Benqi), TraderJoe, YieldYak
+      const [traderJoeData, aaveData, yieldYakData] = await Promise.all([
         this.getTraderJoeData(),
-        this.getBenqiData(),
+        this.getAaveData(),
         this.getYieldYakData(),
       ]);
 
-      const allData = [...traderJoeData, ...benqiData, ...yieldYakData];
+      const allData = [...traderJoeData, ...aaveData, ...yieldYakData];
 
-      logger.info("All protocol data fetched successfully", {
-        protocols: allData.length,
-        active: allData.filter((d) => d.isActive).length,
-      });
+      logger.info(
+        "Active protocol data fetched successfully (Benqi excluded)",
+        {
+          protocols: allData.length,
+          active: allData.filter((d) => d.isActive).length,
+          protocolNames: allData.map((d) => d.protocol),
+        }
+      );
 
       return allData;
     } catch (error) {

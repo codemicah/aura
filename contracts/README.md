@@ -16,11 +16,13 @@ YieldOptimizer.sol (Main Contract)
 ## Deployed Addresses
 
 ### Avalanche Mainnet (Chain ID: 43114)
+
 ```
 YieldOptimizer: 0x... (To be deployed)
 ```
 
 ### Fuji Testnet (Chain ID: 43113)
+
 ```
 YieldOptimizer: 0x... (To be deployed)
 ```
@@ -28,9 +30,11 @@ YieldOptimizer: 0x... (To be deployed)
 ## Main Contract: YieldOptimizer
 
 ### Purpose
+
 Manages user deposits, risk-based allocation strategies, and interactions with DeFi protocols.
 
 ### Key Features
+
 - Non-custodial design (users retain control)
 - Risk-based automatic allocation
 - Emergency withdrawal mechanism
@@ -38,6 +42,7 @@ Manages user deposits, risk-based allocation strategies, and interactions with D
 - Reentrancy protection
 
 ### Constructor
+
 ```solidity
 constructor(
     address _benqiAddress,
@@ -47,13 +52,15 @@ constructor(
 ```
 
 **Parameters:**
-- `_benqiAddress`: Benqi protocol contract address
+
+- `_benqiAddress`: Aave protocol contract address
 - `_traderJoeAddress`: TraderJoe router contract address
 - `_yieldYakAddress`: YieldYak vault contract address
 
 ### Core Functions
 
 #### deposit
+
 ```solidity
 function deposit(uint8 _riskScore) external payable
 ```
@@ -61,16 +68,20 @@ function deposit(uint8 _riskScore) external payable
 Deposits AVAX and allocates across protocols based on risk score.
 
 **Parameters:**
+
 - `_riskScore`: User's risk score (0-100)
 
 **Requirements:**
+
 - Minimum deposit: 0.1 AVAX
 - Valid risk score: 0-100
 
 **Events:**
+
 - `Deposited(address indexed user, uint256 amount, uint8 riskScore)`
 
 #### withdraw
+
 ```solidity
 function withdraw(uint256 _amount) external nonReentrant
 ```
@@ -78,16 +89,20 @@ function withdraw(uint256 _amount) external nonReentrant
 Withdraws specified amount from user's portfolio.
 
 **Parameters:**
+
 - `_amount`: Amount to withdraw in wei
 
 **Requirements:**
+
 - Sufficient balance
 - Non-zero amount
 
 **Events:**
+
 - `Withdrawn(address indexed user, uint256 amount)`
 
 #### rebalance
+
 ```solidity
 function rebalance() external nonReentrant
 ```
@@ -95,13 +110,16 @@ function rebalance() external nonReentrant
 Rebalances user's portfolio to match target allocation.
 
 **Requirements:**
+
 - User must have deposits
 - Gas fee consideration
 
 **Events:**
+
 - `Rebalanced(address indexed user, uint256 timestamp)`
 
 #### emergencyWithdraw
+
 ```solidity
 function emergencyWithdraw() external nonReentrant
 ```
@@ -109,14 +127,17 @@ function emergencyWithdraw() external nonReentrant
 Emergency withdrawal of all user funds.
 
 **Requirements:**
+
 - User must have deposits
 
 **Events:**
+
 - `EmergencyWithdrawal(address indexed user, uint256 amount)`
 
 ### View Functions
 
 #### getUserPortfolio
+
 ```solidity
 function getUserPortfolio(address _user) external view returns (
     uint256 totalValue,
@@ -131,6 +152,7 @@ function getUserPortfolio(address _user) external view returns (
 Returns complete portfolio information for a user.
 
 #### calculateAllocation
+
 ```solidity
 function calculateAllocation(
     uint8 _riskScore,
@@ -145,11 +167,13 @@ function calculateAllocation(
 Calculates protocol allocation based on risk score.
 
 **Allocation Strategy:**
-- **Conservative (0-33)**: 70% Benqi, 30% TraderJoe, 0% YieldYak
-- **Balanced (34-66)**: 40% Benqi, 40% TraderJoe, 20% YieldYak
-- **Aggressive (67-100)**: 20% Benqi, 30% TraderJoe, 50% YieldYak
+
+- **Conservative (0-33)**: 70% Aave, 30% TraderJoe, 0% YieldYak
+- **Balanced (34-66)**: 40% Aave, 40% TraderJoe, 20% YieldYak
+- **Aggressive (67-100)**: 20% Aave, 30% TraderJoe, 50% YieldYak
 
 #### getRebalanceRecommendation
+
 ```solidity
 function getRebalanceRecommendation(address _user) external view returns (
     bool shouldRebalance,
@@ -167,6 +191,7 @@ Analyzes portfolio and recommends rebalancing if needed.
 ### Admin Functions
 
 #### updateProtocolAddresses
+
 ```solidity
 function updateProtocolAddresses(
     address _benqiAddress,
@@ -180,6 +205,7 @@ Updates protocol integration addresses.
 **Access Control:** Owner only
 
 #### updateYields
+
 ```solidity
 function updateYields(
     uint256 _benqiAPY,
@@ -200,12 +226,13 @@ event Withdrawn(address indexed user, uint256 amount);
 event Rebalanced(address indexed user, uint256 timestamp);
 event EmergencyWithdrawal(address indexed user, uint256 amount);
 event YieldsUpdated(uint256 benqiAPY, uint256 traderJoeAPY, uint256 yieldYakAPY);
-event ProtocolAddressesUpdated(address benqi, address traderJoe, address yieldYak);
+event ProtocolAddressesUpdated(address aave, address traderJoe, address yieldYak);
 ```
 
 ## Protocol Interfaces
 
 ### IBenqi
+
 ```solidity
 interface IBenqi {
     function mint() external payable;
@@ -216,6 +243,7 @@ interface IBenqi {
 ```
 
 ### ITraderJoe
+
 ```solidity
 interface ITraderJoe {
     function addLiquidityAVAX(
@@ -230,7 +258,7 @@ interface ITraderJoe {
         uint256 amountAVAX,
         uint256 liquidity
     );
-    
+
     function removeLiquidityAVAX(
         address token,
         uint256 liquidity,
@@ -243,6 +271,7 @@ interface ITraderJoe {
 ```
 
 ### IYieldYak
+
 ```solidity
 interface IYieldYak {
     function deposit() external payable;
@@ -255,6 +284,7 @@ interface IYieldYak {
 ## Security Considerations
 
 ### Implemented Security Measures
+
 1. **ReentrancyGuard**: All state-changing functions protected
 2. **Ownable**: Admin functions restricted to owner
 3. **SafeERC20**: Safe token transfer operations
@@ -262,6 +292,7 @@ interface IYieldYak {
 5. **Minimum Deposits**: Prevents dust attacks
 
 ### Auditing Recommendations
+
 1. Formal verification of allocation logic
 2. Economic attack vector analysis
 3. Gas optimization review
@@ -269,6 +300,7 @@ interface IYieldYak {
 5. Upgrade mechanism consideration
 
 ### Known Limitations
+
 1. Single owner control (consider multisig)
 2. No pause mechanism (consider emergency pause)
 3. Protocol risk exposure
@@ -277,12 +309,14 @@ interface IYieldYak {
 ## Gas Optimization
 
 ### Gas Costs (Estimated)
+
 - Deposit: ~150,000 gas
 - Withdraw: ~120,000 gas
 - Rebalance: ~250,000 gas
 - Emergency Withdraw: ~100,000 gas
 
 ### Optimization Techniques
+
 1. Storage packing for user data
 2. Minimal external calls
 3. Batch operations where possible
@@ -291,11 +325,13 @@ interface IYieldYak {
 ## Testing
 
 ### Test Coverage
+
 - Unit Tests: 21 tests, 100% passing
 - Fuzz Tests: 256 runs on risk scores
 - Gas Tests: All functions under 300k gas
 
 ### Test Categories
+
 1. **Deployment Tests**: Constructor validation
 2. **Risk Profile Tests**: Allocation calculations
 3. **Edge Case Tests**: Boundary conditions
@@ -303,6 +339,7 @@ interface IYieldYak {
 5. **Integration Tests**: Protocol interactions
 
 ### Running Tests
+
 ```bash
 # Run all tests
 forge test
@@ -320,11 +357,13 @@ forge coverage
 ## Deployment
 
 ### Prerequisites
+
 1. Install Foundry
 2. Configure environment variables
 3. Fund deployer wallet with AVAX
 
 ### Deployment Script
+
 ```bash
 # Deploy to local Anvil
 forge script script/Deploy.s.sol --rpc-url http://localhost:8545 --broadcast
@@ -346,6 +385,7 @@ forge script script/Deploy.s.sol \
 ```
 
 ### Post-Deployment
+
 1. Verify contract on Snowtrace
 2. Update protocol addresses if needed
 3. Set initial yield rates
@@ -355,10 +395,12 @@ forge script script/Deploy.s.sol \
 ## Upgrade Strategy
 
 ### Current Version
+
 - Version: 1.0.0
 - Deployment: Initial release
 
 ### Future Upgrades
+
 1. Implement proxy pattern for upgradability
 2. Add governance mechanism
 3. Integrate additional protocols
@@ -368,9 +410,10 @@ forge script script/Deploy.s.sol \
 ## Integration Guide
 
 ### Frontend Integration
+
 ```javascript
-import { ethers } from 'ethers';
-import YieldOptimizerABI from './abis/YieldOptimizer.json';
+import { ethers } from "ethers";
+import YieldOptimizerABI from "./abis/YieldOptimizer.json";
 
 const contract = new ethers.Contract(
   YIELD_OPTIMIZER_ADDRESS,
@@ -380,7 +423,7 @@ const contract = new ethers.Contract(
 
 // Deposit
 const tx = await contract.deposit(riskScore, {
-  value: ethers.parseEther("1.0")
+  value: ethers.parseEther("1.0"),
 });
 
 // Get portfolio
@@ -388,8 +431,9 @@ const portfolio = await contract.getUserPortfolio(userAddress);
 ```
 
 ### Backend Integration
+
 ```javascript
-const { ethers } = require('ethers');
+const { ethers } = require("ethers");
 
 const provider = new ethers.JsonRpcProvider(RPC_URL);
 const contract = new ethers.Contract(
@@ -399,7 +443,7 @@ const contract = new ethers.Contract(
 );
 
 // Monitor events
-contract.on('Deposited', (user, amount, riskScore) => {
+contract.on("Deposited", (user, amount, riskScore) => {
   console.log(`User ${user} deposited ${amount} with risk ${riskScore}`);
 });
 ```

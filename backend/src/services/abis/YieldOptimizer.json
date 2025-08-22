@@ -1,562 +1,534 @@
 {
   "abi": [
     {
-      "inputs": [],
-      "name": "emergencyWithdraw",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
+      "type": "constructor",
       "inputs": [
         {
-          "internalType": "uint8",
-          "name": "_riskScore",
-          "type": "uint8"
-        }
-      ],
-      "name": "optimizeYield",
-      "outputs": [],
-      "stateMutability": "payable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "rebalance",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "stateMutability": "nonpayable",
-      "type": "constructor"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "owner",
-          "type": "address"
-        }
-      ],
-      "name": "OwnableInvalidOwner",
-      "type": "error"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "account",
-          "type": "address"
-        }
-      ],
-      "name": "OwnableUnauthorizedAccount",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "ReentrancyGuardReentrantCall",
-      "type": "error"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "previousOwner",
-          "type": "address"
+          "name": "_traderJoeRouter",
+          "type": "address",
+          "internalType": "address"
         },
         {
-          "indexed": true,
-          "internalType": "address",
-          "name": "newOwner",
-          "type": "address"
-        }
+          "name": "_yieldYakFarm",
+          "type": "address",
+          "internalType": "address"
+        },
+        { "name": "_wavax", "type": "address", "internalType": "address" },
+        { "name": "_usdc", "type": "address", "internalType": "address" }
       ],
-      "name": "OwnershipTransferred",
-      "type": "event"
+      "stateMutability": "nonpayable"
     },
     {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "string",
-          "name": "protocol",
-          "type": "string"
-        },
-        {
-          "indexed": false,
-          "internalType": "address",
-          "name": "newAddress",
-          "type": "address"
-        }
-      ],
-      "name": "ProtocolAddressUpdated",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "totalValue",
-          "type": "uint256"
-        }
-      ],
-      "name": "Rebalanced",
-      "type": "event"
-    },
-    {
-      "inputs": [],
-      "name": "renounceOwnership",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "newOwner",
-          "type": "address"
-        }
-      ],
-      "name": "transferOwnership",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "string",
-          "name": "protocol",
-          "type": "string"
-        },
-        {
-          "internalType": "address",
-          "name": "newAddress",
-          "type": "address"
-        }
-      ],
-      "name": "updateProtocolAddress",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "_benqiAPY",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_traderJoeAPY",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "_yieldYakAPY",
-          "type": "uint256"
-        }
-      ],
-      "name": "updateYields",
-      "outputs": [],
-      "stateMutability": "nonpayable",
-      "type": "function"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        }
-      ],
-      "name": "Withdrawn",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": true,
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "amount",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint8",
-          "name": "riskScore",
-          "type": "uint8"
-        }
-      ],
-      "name": "YieldOptimized",
-      "type": "event"
-    },
-    {
-      "anonymous": false,
-      "inputs": [
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "benqiAPY",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "traderJoeAPY",
-          "type": "uint256"
-        },
-        {
-          "indexed": false,
-          "internalType": "uint256",
-          "name": "yieldYakAPY",
-          "type": "uint256"
-        }
-      ],
-      "name": "YieldsUpdated",
-      "type": "event"
-    },
-    {
-      "inputs": [],
+      "type": "function",
       "name": "BASIS_POINTS",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [],
-      "name": "benqiComptroller",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
     },
     {
-      "inputs": [],
-      "name": "currentYields",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "benqiAPY",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "traderJoeAPY",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "yieldYakAPY",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "lastUpdated",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
-      "name": "getCurrentYields",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "benqiAPY",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "traderJoeAPY",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "yieldYakAPY",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "lastUpdated",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        }
-      ],
-      "name": "getRebalanceRecommendation",
-      "outputs": [
-        {
-          "internalType": "bool",
-          "name": "shouldRebalance",
-          "type": "bool"
-        },
-        {
-          "internalType": "uint256",
-          "name": "newBenqiAllocation",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "newTraderJoeAllocation",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "newYieldYakAllocation",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "user",
-          "type": "address"
-        }
-      ],
-      "name": "getUserPortfolio",
-      "outputs": [
-        {
-          "components": [
-            {
-              "internalType": "uint8",
-              "name": "riskScore",
-              "type": "uint8"
-            },
-            {
-              "internalType": "uint256",
-              "name": "totalDeposited",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "lastRebalance",
-              "type": "uint256"
-            },
-            {
-              "internalType": "bool",
-              "name": "autoRebalance",
-              "type": "bool"
-            }
-          ],
-          "internalType": "struct YieldOptimizer.UserProfile",
-          "name": "profile",
-          "type": "tuple"
-        },
-        {
-          "components": [
-            {
-              "internalType": "uint256",
-              "name": "benqiAmount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "traderJoeAmount",
-              "type": "uint256"
-            },
-            {
-              "internalType": "uint256",
-              "name": "yieldYakAmount",
-              "type": "uint256"
-            }
-          ],
-          "internalType": "struct YieldOptimizer.ProtocolAllocation",
-          "name": "allocation",
-          "type": "tuple"
-        },
-        {
-          "internalType": "uint256",
-          "name": "estimatedValue",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
+      "type": "function",
       "name": "MIN_DEPOSIT",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
     },
     {
-      "inputs": [],
-      "name": "owner",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [],
+      "type": "function",
       "name": "REBALANCE_THRESHOLD",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
+      "stateMutability": "view"
     },
     {
+      "type": "function",
+      "name": "USDC",
       "inputs": [],
+      "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "WAVAX",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "currentYields",
+      "inputs": [],
+      "outputs": [
+        { "name": "aaveAPY", "type": "uint256", "internalType": "uint256" },
+        {
+          "name": "traderJoeAPY",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        { "name": "yieldYakAPY", "type": "uint256", "internalType": "uint256" },
+        { "name": "lastUpdated", "type": "uint256", "internalType": "uint256" }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "emergencyWithdraw",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "getCurrentYields",
+      "inputs": [],
+      "outputs": [
+        { "name": "aaveAPY", "type": "uint256", "internalType": "uint256" },
+        {
+          "name": "traderJoeAPY",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        { "name": "yieldYakAPY", "type": "uint256", "internalType": "uint256" },
+        { "name": "lastUpdated", "type": "uint256", "internalType": "uint256" }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getRebalanceRecommendation",
+      "inputs": [
+        { "name": "user", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [
+        { "name": "shouldRebalance", "type": "bool", "internalType": "bool" },
+        {
+          "name": "newAaveAllocation",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "newTraderJoeAllocation",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "newYieldYakAllocation",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "getUserPortfolio",
+      "inputs": [
+        { "name": "user", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [
+        {
+          "name": "profile",
+          "type": "tuple",
+          "internalType": "struct YieldOptimizer.UserProfile",
+          "components": [
+            { "name": "riskScore", "type": "uint8", "internalType": "uint8" },
+            {
+              "name": "totalDeposited",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "lastRebalance",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            { "name": "autoRebalance", "type": "bool", "internalType": "bool" }
+          ]
+        },
+        {
+          "name": "allocation",
+          "type": "tuple",
+          "internalType": "struct YieldOptimizer.ProtocolAllocation",
+          "components": [
+            {
+              "name": "aaveAmount",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "traderJoeAmount",
+              "type": "uint256",
+              "internalType": "uint256"
+            },
+            {
+              "name": "yieldYakAmount",
+              "type": "uint256",
+              "internalType": "uint256"
+            }
+          ]
+        },
+        {
+          "name": "estimatedValue",
+          "type": "uint256",
+          "internalType": "uint256"
+        }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "optimizeYield",
+      "inputs": [
+        { "name": "_riskScore", "type": "uint8", "internalType": "uint8" }
+      ],
+      "outputs": [],
+      "stateMutability": "payable"
+    },
+    {
+      "type": "function",
+      "name": "owner",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "rebalance",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "renounceOwnership",
+      "inputs": [],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "setTokenAddresses",
+      "inputs": [
+        { "name": "_wavax", "type": "address", "internalType": "address" },
+        { "name": "_usdc", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "traderJoePair",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
       "name": "traderJoeRouter",
-      "outputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "userAllocations",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "benqiAmount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "traderJoeAmount",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "yieldYakAmount",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
-        }
-      ],
-      "name": "userProfiles",
-      "outputs": [
-        {
-          "internalType": "uint8",
-          "name": "riskScore",
-          "type": "uint8"
-        },
-        {
-          "internalType": "uint256",
-          "name": "totalDeposited",
-          "type": "uint256"
-        },
-        {
-          "internalType": "uint256",
-          "name": "lastRebalance",
-          "type": "uint256"
-        },
-        {
-          "internalType": "bool",
-          "name": "autoRebalance",
-          "type": "bool"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
       "inputs": [],
-      "name": "yieldYakFarm",
-      "outputs": [
+      "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "transferOwnership",
+      "inputs": [
+        { "name": "newOwner", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "updateProtocolAddress",
+      "inputs": [
+        { "name": "protocol", "type": "string", "internalType": "string" },
+        { "name": "newAddress", "type": "address", "internalType": "address" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "updateYields",
+      "inputs": [
+        { "name": "_aaveAPY", "type": "uint256", "internalType": "uint256" },
         {
-          "internalType": "address",
-          "name": "",
-          "type": "address"
+          "name": "_traderJoeAPY",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        { "name": "_yieldYakAPY", "type": "uint256", "internalType": "uint256" }
+      ],
+      "outputs": [],
+      "stateMutability": "nonpayable"
+    },
+    {
+      "type": "function",
+      "name": "userAllocations",
+      "inputs": [{ "name": "", "type": "address", "internalType": "address" }],
+      "outputs": [
+        { "name": "aaveAmount", "type": "uint256", "internalType": "uint256" },
+        {
+          "name": "traderJoeAmount",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "yieldYakAmount",
+          "type": "uint256",
+          "internalType": "uint256"
         }
       ],
-      "stateMutability": "view",
-      "type": "function"
-    }
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "userProfiles",
+      "inputs": [{ "name": "", "type": "address", "internalType": "address" }],
+      "outputs": [
+        { "name": "riskScore", "type": "uint8", "internalType": "uint8" },
+        {
+          "name": "totalDeposited",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        {
+          "name": "lastRebalance",
+          "type": "uint256",
+          "internalType": "uint256"
+        },
+        { "name": "autoRebalance", "type": "bool", "internalType": "bool" }
+      ],
+      "stateMutability": "view"
+    },
+    {
+      "type": "function",
+      "name": "yieldYakFarm",
+      "inputs": [],
+      "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
+      "stateMutability": "view"
+    },
+    {
+      "type": "event",
+      "name": "AaveDepositRequested",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "timestamp",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "AaveWithdrawalRequested",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "timestamp",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "BackendAction",
+      "inputs": [
+        {
+          "name": "action",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        },
+        {
+          "name": "user",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "requestId",
+          "type": "bytes32",
+          "indexed": false,
+          "internalType": "bytes32"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "OwnershipTransferred",
+      "inputs": [
+        {
+          "name": "previousOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "newOwner",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "ProtocolAddressUpdated",
+      "inputs": [
+        {
+          "name": "protocol",
+          "type": "string",
+          "indexed": false,
+          "internalType": "string"
+        },
+        {
+          "name": "newAddress",
+          "type": "address",
+          "indexed": false,
+          "internalType": "address"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Rebalanced",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "totalValue",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "Withdrawn",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "YieldOptimized",
+      "inputs": [
+        {
+          "name": "user",
+          "type": "address",
+          "indexed": true,
+          "internalType": "address"
+        },
+        {
+          "name": "amount",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "riskScore",
+          "type": "uint8",
+          "indexed": false,
+          "internalType": "uint8"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "event",
+      "name": "YieldsUpdated",
+      "inputs": [
+        {
+          "name": "aaveAPY",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "traderJoeAPY",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        },
+        {
+          "name": "yieldYakAPY",
+          "type": "uint256",
+          "indexed": false,
+          "internalType": "uint256"
+        }
+      ],
+      "anonymous": false
+    },
+    {
+      "type": "error",
+      "name": "OwnableInvalidOwner",
+      "inputs": [
+        { "name": "owner", "type": "address", "internalType": "address" }
+      ]
+    },
+    {
+      "type": "error",
+      "name": "OwnableUnauthorizedAccount",
+      "inputs": [
+        { "name": "account", "type": "address", "internalType": "address" }
+      ]
+    },
+    { "type": "error", "name": "ReentrancyGuardReentrantCall", "inputs": [] }
   ]
 }

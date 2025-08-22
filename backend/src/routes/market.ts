@@ -36,7 +36,7 @@ router.get("/avax-price", marketController.getAVAXPrice);
  * @route   GET /api/v1/market/protocol/:protocol
  * @desc    Get specific protocol data
  * @access  Public
- * @param   protocol - Protocol name (benqi, traderjoe, yieldyak)
+ * @param   protocol - Protocol name (aave, traderjoe, yieldyak)
  */
 router.get("/protocol/:protocol", marketController.getProtocolData);
 

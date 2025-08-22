@@ -1,63 +1,65 @@
-'use client'
+"use client";
 
-import { useState, useEffect, Suspense } from 'react'
-import Link from "next/link"
-import { useRouter, useSearchParams } from 'next/navigation'
-import ProtectedRoute from '../../src/components/ProtectedRoute'
-import { ConnectButton } from "../../src/components/ConnectButton"
-import { RiskAssessment } from "../../src/components/RiskAssessment"
-import { useAccount } from 'wagmi'
-import { useRiskProfile } from '../../src/hooks/useRiskProfile'
+import { useState, useEffect, Suspense } from "react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import ProtectedRoute from "../../src/components/ProtectedRoute";
+import { ConnectButton } from "../../src/components/ConnectButton";
+import { RiskAssessment } from "../../src/components/RiskAssessment";
+import { useAccount } from "wagmi";
+import { useRiskProfile } from "../../src/hooks/useRiskProfile";
 
 function OnboardingContent() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const { isConnected } = useAccount()
-  const { hasProfile } = useRiskProfile()
-  const [isCompleted, setIsCompleted] = useState(false)
-  const [riskProfile, setRiskProfile] = useState<any>(null)
-  
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { isConnected } = useAccount();
+  const { hasProfile } = useRiskProfile();
+  const [isCompleted, setIsCompleted] = useState(false);
+  const [riskProfile, setRiskProfile] = useState<any>(null);
+
   // Get redirect URL from query params
-  const redirectTo = searchParams.get('redirect') || '/dashboard'
+  const redirectTo = searchParams.get("redirect") || "/dashboard";
 
   // Check if user already has a profile
   useEffect(() => {
     if (hasProfile && isConnected) {
-      router.push(redirectTo)
+      router.push(redirectTo);
     }
-  }, [hasProfile, isConnected, redirectTo, router])
+  }, [hasProfile, isConnected, redirectTo, router]);
 
   const handleRiskAssessmentComplete = (data: any) => {
-    setRiskProfile(data)
-    setIsCompleted(true)
-    
+    setRiskProfile(data);
+    setIsCompleted(true);
+
     // Set cookie to indicate profile completion
-    document.cookie = `hasRiskProfile=true; path=/; max-age=${60 * 60 * 24 * 30}`
-    
+    document.cookie = `hasRiskProfile=true; path=/; max-age=${
+      60 * 60 * 24 * 30
+    }`;
+
     // The profile is automatically saved to backend by the useRiskAssessment hook
-  }
+  };
 
   const handleContinueToDashboard = () => {
-    router.push(redirectTo)
-  }
+    router.push(redirectTo);
+  };
 
   const getRiskLevelColor = (riskScore: number) => {
-    if (riskScore <= 33) return 'text-green-600 bg-green-50 border-green-200'
-    if (riskScore <= 66) return 'text-blue-600 bg-blue-50 border-blue-200'
-    return 'text-purple-600 bg-purple-50 border-purple-200'
-  }
+    if (riskScore <= 33) return "text-green-600 bg-green-50 border-green-200";
+    if (riskScore <= 66) return "text-blue-600 bg-blue-50 border-blue-200";
+    return "text-purple-600 bg-purple-50 border-purple-200";
+  };
 
   const getRiskLevelName = (riskScore: number) => {
-    if (riskScore <= 33) return 'Conservative'
-    if (riskScore <= 66) return 'Balanced'
-    return 'Aggressive'
-  }
+    if (riskScore <= 33) return "Conservative";
+    if (riskScore <= 66) return "Balanced";
+    return "Aggressive";
+  };
 
   const getAllocationStrategy = (riskScore: number) => {
-    if (riskScore <= 33) return { benqi: 70, traderjoe: 30, yieldyak: 0 }
-    if (riskScore <= 66) return { benqi: 40, traderjoe: 40, yieldyak: 20 }
-    return { benqi: 20, traderjoe: 30, yieldyak: 50 }
-  }
+    if (riskScore <= 33) return { aave: 70, traderjoe: 30, yieldyak: 0 };
+    if (riskScore <= 66) return { aave: 40, traderjoe: 40, yieldyak: 20 };
+    return { aave: 20, traderjoe: 30, yieldyak: 50 };
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -69,7 +71,9 @@ function OnboardingContent() {
               <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-sm">DeFi</span>
               </div>
-              <span className="font-semibold text-gray-900">Personal DeFi Wealth Manager</span>
+              <span className="font-semibold text-gray-900">
+                Personal DeFi Wealth Manager
+              </span>
             </Link>
             <ConnectButton />
           </div>
@@ -84,7 +88,8 @@ function OnboardingContent() {
                 Let's Build Your Financial Profile
               </h1>
               <p className="text-xl text-gray-600">
-                Answer a few questions to help our AI create the perfect investment strategy for you.
+                Answer a few questions to help our AI create the perfect
+                investment strategy for you.
               </p>
             </div>
 
@@ -97,21 +102,38 @@ function OnboardingContent() {
                 Your Financial Profile is Complete!
               </h1>
               <p className="text-xl text-gray-600">
-                Based on your answers, we've created a personalized investment strategy.
+                Based on your answers, we've created a personalized investment
+                strategy.
               </p>
             </div>
 
             {/* Risk Profile Results */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 mb-8">
               <div className="text-center mb-8">
-                <div className={`inline-flex items-center px-6 py-3 rounded-full text-lg font-semibold border ${getRiskLevelColor(riskProfile.riskScore)}`}>
-                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <div
+                  className={`inline-flex items-center px-6 py-3 rounded-full text-lg font-semibold border ${getRiskLevelColor(
+                    riskProfile.riskScore
+                  )}`}
+                >
+                  <svg
+                    className="w-5 h-5 mr-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                   {getRiskLevelName(riskProfile.riskScore)} Risk Profile
                 </div>
                 <div className="mt-4">
-                  <div className="text-3xl font-bold text-gray-900">Risk Score: {riskProfile.riskScore}/100</div>
+                  <div className="text-3xl font-bold text-gray-900">
+                    Risk Score: {riskProfile.riskScore}/100
+                  </div>
                 </div>
               </div>
 
@@ -122,22 +144,47 @@ function OnboardingContent() {
                 </h3>
                 <div className="grid md:grid-cols-3 gap-6">
                   {(() => {
-                    const allocation = getAllocationStrategy(riskProfile.riskScore)
+                    const allocation = getAllocationStrategy(
+                      riskProfile.riskScore
+                    );
                     return [
-                      { name: 'Benqi Lending', percentage: allocation.benqi, color: 'bg-green-500', description: 'Stable lending yields' },
-                      { name: 'TraderJoe LP', percentage: allocation.traderjoe, color: 'bg-blue-500', description: 'Liquidity provision' },
-                      { name: 'YieldYak Farms', percentage: allocation.yieldyak, color: 'bg-purple-500', description: 'Auto-compounding farms' }
+                      {
+                        name: "Aave Lending",
+                        percentage: allocation.aave,
+                        color: "bg-green-500",
+                        description: "Stable lending yields",
+                      },
+                      {
+                        name: "TraderJoe LP",
+                        percentage: allocation.traderjoe,
+                        color: "bg-blue-500",
+                        description: "Liquidity provision",
+                      },
+                      {
+                        name: "YieldYak Farms",
+                        percentage: allocation.yieldyak,
+                        color: "bg-purple-500",
+                        description: "Auto-compounding farms",
+                      },
                     ].map((protocol) => (
                       <div key={protocol.name} className="text-center">
                         <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                          <div className={`w-12 h-12 rounded-full ${protocol.color} flex items-center justify-center`}>
-                            <span className="text-white font-bold text-lg">{protocol.percentage}%</span>
+                          <div
+                            className={`w-12 h-12 rounded-full ${protocol.color} flex items-center justify-center`}
+                          >
+                            <span className="text-white font-bold text-lg">
+                              {protocol.percentage}%
+                            </span>
                           </div>
                         </div>
-                        <div className="font-semibold text-gray-900">{protocol.name}</div>
-                        <div className="text-sm text-gray-600">{protocol.description}</div>
+                        <div className="font-semibold text-gray-900">
+                          {protocol.name}
+                        </div>
+                        <div className="text-sm text-gray-600">
+                          {protocol.description}
+                        </div>
                       </div>
-                    ))
+                    ));
                   })()}
                 </div>
               </div>
@@ -145,10 +192,16 @@ function OnboardingContent() {
               {/* Expected Returns */}
               <div className="border-t border-gray-200 pt-6">
                 <div className="text-center">
-                  <div className="text-sm text-gray-600 mb-2">Estimated Annual Returns</div>
+                  <div className="text-sm text-gray-600 mb-2">
+                    Estimated Annual Returns
+                  </div>
                   <div className="text-2xl font-bold text-green-600">
-                    {riskProfile.riskScore <= 33 ? '6.5%' : 
-                     riskProfile.riskScore <= 66 ? '8.8%' : '11.2%'} APY
+                    {riskProfile.riskScore <= 33
+                      ? "6.5%"
+                      : riskProfile.riskScore <= 66
+                      ? "8.8%"
+                      : "11.2%"}{" "}
+                    APY
                   </div>
                   <div className="text-sm text-gray-500 mt-1">
                     vs 0.1% in traditional savings accounts
@@ -180,22 +233,24 @@ function OnboardingContent() {
         )}
       </main>
     </div>
-  )
+  );
 }
 
 export default function Onboarding() {
   return (
     <ProtectedRoute>
-      <Suspense fallback={
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading...</p>
+      <Suspense
+        fallback={
+          <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-600">Loading...</p>
+            </div>
           </div>
-        </div>
-      }>
+        }
+      >
         <OnboardingContent />
       </Suspense>
     </ProtectedRoute>
-  )
+  );
 }

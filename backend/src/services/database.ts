@@ -102,6 +102,7 @@ export class DatabaseService {
         id TEXT PRIMARY KEY,
         user_id TEXT NOT NULL,
         total_value TEXT NOT NULL,
+        aave_amount TEXT DEFAULT '0',
         benqi_amount TEXT DEFAULT '0',
         traderjoe_amount TEXT DEFAULT '0',
         yieldyak_amount TEXT DEFAULT '0',
@@ -407,6 +408,7 @@ export class DatabaseService {
   async createPortfolioSnapshot(data: {
     userId: string;
     totalValue: string;
+    aaveAmount: string;
     benqiAmount: string;
     traderJoeAmount: string;
     yieldYakAmount: string;
@@ -419,15 +421,16 @@ export class DatabaseService {
       const id = this.generateId();
       const sql = `
         INSERT INTO portfolio_snapshots (
-          id, user_id, total_value, benqi_amount, traderjoe_amount, 
+          id, user_id, total_value, aave_amount, benqi_amount, traderjoe_amount, 
           yieldyak_amount, estimated_apy, avax_price
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
       `;
 
       const params = [
         id,
         data.userId,
         data.totalValue,
+        data.aaveAmount,
         data.benqiAmount,
         data.traderJoeAmount,
         data.yieldYakAmount,
@@ -455,7 +458,7 @@ export class DatabaseService {
 
       // First try to get user profile by address
       const profileSql = "SELECT id FROM user_profiles WHERE address = ?";
-      
+
       this.db.get(profileSql, [userAddress], (err, profile: any) => {
         if (err) {
           logger.error("Failed to get user profile", err);
@@ -486,7 +489,8 @@ export class DatabaseService {
               id: row.id,
               userId: row.user_id,
               totalValue: row.total_value,
-              benqiAmount: row.benqi_amount,
+              aaveAmount: row.aave_amount || "0", // Primary field for Aave
+              // benqiAmount: row.benqi_amount, // Legacy field - exclude from frontend
               traderJoeAmount: row.traderjoe_amount,
               yieldYakAmount: row.yieldyak_amount,
               estimatedAPY: row.estimated_apy,
@@ -506,7 +510,7 @@ export class DatabaseService {
 
       // First get user profile by address
       const profileSql = "SELECT id FROM user_profiles WHERE address = ?";
-      
+
       this.db.get(profileSql, [userAddress], (err, profile: any) => {
         if (err) {
           logger.error("Failed to get user profile", err);
@@ -537,7 +541,8 @@ export class DatabaseService {
               id: row.id,
               userId: row.user_id,
               totalValue: row.total_value,
-              benqiAmount: row.benqi_amount,
+              aaveAmount: row.aave_amount || "0", // Primary field for Aave
+              // benqiAmount: row.benqi_amount, // Legacy field - exclude from frontend
               traderJoeAmount: row.traderjoe_amount,
               yieldYakAmount: row.yieldyak_amount,
               estimatedAPY: row.estimated_apy,

@@ -1,229 +1,319 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useReadContract, useWriteContract, useWaitForTransactionReceipt, useAccount, useChainId, useBlockNumber } from 'wagmi'
-import { parseEther, formatEther } from 'viem'
-import { YIELD_OPTIMIZER_ABI, YIELD_OPTIMIZER_ADDRESS } from '../config/contracts'
-import type { TransactionStep } from '../components/TransactionStatus'
-import { apiClient } from '@/utils/api'
+import { useState, useEffect } from "react";
+import {
+  useReadContract,
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  useAccount,
+  useChainId,
+  useBlockNumber,
+} from "wagmi";
+import { parseEther, formatEther } from "viem";
+import {
+  YIELD_OPTIMIZER_ABI,
+  YIELD_OPTIMIZER_ADDRESS,
+} from "../config/contracts";
+import type { TransactionStep } from "../components/TransactionStatus";
+import { apiClient } from "@/utils/api";
+import { usePortfolio } from "./usePortfolio";
 
 export function useYieldOptimizer() {
-  const { address } = useAccount()
-  const chainId = useChainId()
-  const contractAddress = YIELD_OPTIMIZER_ADDRESS
-  const { data: blockNumber } = useBlockNumber({ watch: true })
+  const { address } = useAccount();
+  const chainId = useChainId();
+  const contractAddress = YIELD_OPTIMIZER_ADDRESS;
+  const { data: blockNumber } = useBlockNumber({ watch: true });
+  const { refresh: refreshBackendPortfolio } = usePortfolio();
 
   // Enhanced transaction state management
-  const [transactionSteps, setTransactionSteps] = useState<TransactionStep[]>([])
-  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false)
-  const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date())
-  const [lastTransactionAmount, setLastTransactionAmount] = useState<string>('')
+  const [transactionSteps, setTransactionSteps] = useState<TransactionStep[]>(
+    []
+  );
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const [lastRefreshTime, setLastRefreshTime] = useState<Date>(new Date());
+  const [lastTransactionAmount, setLastTransactionAmount] =
+    useState<string>("");
 
   // Read functions
-  const { data: userPortfolio, isLoading: isLoadingPortfolio, refetch: refetchPortfolio } = useReadContract({
+  const {
+    data: userPortfolio,
+    isLoading: isLoadingPortfolio,
+    refetch: refetchPortfolio,
+  } = useReadContract({
     address: contractAddress,
     abi: YIELD_OPTIMIZER_ABI,
-    functionName: 'getUserPortfolio',
+    functionName: "getUserPortfolio",
     args: address ? [address] : undefined,
     query: {
       enabled: !!address && !!contractAddress,
       refetchInterval: 10000, // Refetch every 10 seconds
-    }
-  })
+    },
+  });
 
-  const { data: currentYields, isLoading: isLoadingYields, refetch: refetchYields } = useReadContract({
+  const {
+    data: currentYields,
+    isLoading: isLoadingYields,
+    refetch: refetchYields,
+  } = useReadContract({
     address: contractAddress,
     abi: YIELD_OPTIMIZER_ABI,
-    functionName: 'getCurrentYields',
+    functionName: "getCurrentYields",
     query: {
       enabled: !!contractAddress,
       refetchInterval: 30000, // Refetch every 30 seconds
-    }
-  })
+    },
+  });
 
-  const { data: rebalanceRecommendation, isLoading: isLoadingRebalance } = useReadContract({
-    address: contractAddress,
-    abi: YIELD_OPTIMIZER_ABI,
-    functionName: 'getRebalanceRecommendation',
-    args: address ? [address] : undefined,
-    query: {
-      enabled: !!address && !!contractAddress,
-      refetchInterval: 60000, // Refetch every minute
-    }
-  })
+  const { data: rebalanceRecommendation, isLoading: isLoadingRebalance } =
+    useReadContract({
+      address: contractAddress,
+      abi: YIELD_OPTIMIZER_ABI,
+      functionName: "getRebalanceRecommendation",
+      args: address ? [address] : undefined,
+      query: {
+        enabled: !!address && !!contractAddress,
+        refetchInterval: 60000, // Refetch every minute
+      },
+    });
 
   // Write functions
-  const { writeContract: optimizeYield, data: optimizeHash, error: optimizeError, isPending: isOptimizing } = useWriteContract()
-  const { writeContract: rebalancePortfolio, data: rebalanceHash, error: rebalanceError, isPending: isRebalancing } = useWriteContract()
-  const { writeContract: emergencyWithdraw, data: withdrawHash, error: withdrawError, isPending: isWithdrawing } = useWriteContract()
+  const {
+    writeContract: optimizeYield,
+    data: optimizeHash,
+    error: optimizeError,
+    isPending: isOptimizing,
+  } = useWriteContract();
+  const {
+    writeContract: rebalancePortfolio,
+    data: rebalanceHash,
+    error: rebalanceError,
+    isPending: isRebalancing,
+  } = useWriteContract();
+  const {
+    writeContract: emergencyWithdraw,
+    data: withdrawHash,
+    error: withdrawError,
+    isPending: isWithdrawing,
+  } = useWriteContract();
 
   // Transaction status with timeout handling
-  const { isLoading: isOptimizeConfirming, isSuccess: isOptimizeSuccess } = useWaitForTransactionReceipt({
-    hash: optimizeHash,
-    confirmations: 1,
-    query: {
-      // Add timeout for local development (15 seconds)
-      staleTime: chainId === 31337 ? 15000 : 60000,
-    }
-  })
+  const { isLoading: isOptimizeConfirming, isSuccess: isOptimizeSuccess } =
+    useWaitForTransactionReceipt({
+      hash: optimizeHash,
+      confirmations: 1,
+      query: {
+        // Add timeout for local development (15 seconds)
+        staleTime: chainId === 31337 ? 15000 : 60000,
+      },
+    });
 
-  const { isLoading: isRebalanceConfirming, isSuccess: isRebalanceSuccess } = useWaitForTransactionReceipt({
-    hash: rebalanceHash,
-    confirmations: 1,
-    query: {
-      // Add timeout for local development (15 seconds)
-      staleTime: chainId === 31337 ? 15000 : 60000,
-    }
-  })
+  const { isLoading: isRebalanceConfirming, isSuccess: isRebalanceSuccess } =
+    useWaitForTransactionReceipt({
+      hash: rebalanceHash,
+      confirmations: 1,
+      query: {
+        // Add timeout for local development (15 seconds)
+        staleTime: chainId === 31337 ? 15000 : 60000,
+      },
+    });
 
-  const { isLoading: isWithdrawConfirming, isSuccess: isWithdrawSuccess } = useWaitForTransactionReceipt({
-    hash: withdrawHash,
-    confirmations: 1,
-    query: {
-      // Add timeout for local development (15 seconds)
-      staleTime: chainId === 31337 ? 15000 : 60000,
-    }
-  })
+  const { isLoading: isWithdrawConfirming, isSuccess: isWithdrawSuccess } =
+    useWaitForTransactionReceipt({
+      hash: withdrawHash,
+      confirmations: 1,
+      query: {
+        // Add timeout for local development (15 seconds)
+        staleTime: chainId === 31337 ? 15000 : 60000,
+      },
+    });
 
   // Enhanced transaction monitoring
   useEffect(() => {
     if (blockNumber) {
-      setLastRefreshTime(new Date())
+      setLastRefreshTime(new Date());
       // Force data refetch on new blocks for real-time updates
-      refetchPortfolio()
-      refetchYields()
+      refetchPortfolio();
+      refetchYields();
     }
-  }, [blockNumber, refetchPortfolio, refetchYields])
+  }, [blockNumber, refetchPortfolio, refetchYields]);
 
   // Add timeout handler for transaction modal
   useEffect(() => {
-    if (isTransactionModalOpen && (rebalanceHash || optimizeHash || withdrawHash)) {
-      const timeout = setTimeout(() => {
-        // Auto-close modal after timeout on local chain
-        if (chainId === 31337 && !isOptimizeSuccess && !isRebalanceSuccess && !isWithdrawSuccess) {
-          setIsTransactionModalOpen(false)
-          // Force refresh portfolio data
-          refetchPortfolio()
-          refetchYields()
-        }
-      }, chainId === 31337 ? 15000 : 60000) // 15s for local, 60s for mainnet
+    if (
+      isTransactionModalOpen &&
+      (rebalanceHash || optimizeHash || withdrawHash)
+    ) {
+      const timeout = setTimeout(
+        () => {
+          // Auto-close modal after timeout on local chain
+          if (
+            chainId === 31337 &&
+            !isOptimizeSuccess &&
+            !isRebalanceSuccess &&
+            !isWithdrawSuccess
+          ) {
+            setIsTransactionModalOpen(false);
+            // Force refresh portfolio data
+            refetchPortfolio();
+            refetchYields();
+          }
+        },
+        chainId === 31337 ? 15000 : 60000
+      ); // 15s for local, 60s for mainnet
 
-      return () => clearTimeout(timeout)
+      return () => clearTimeout(timeout);
     }
-  }, [isTransactionModalOpen, rebalanceHash, optimizeHash, withdrawHash, chainId, 
-      isOptimizeSuccess, isRebalanceSuccess, isWithdrawSuccess, refetchPortfolio, refetchYields])
+  }, [
+    isTransactionModalOpen,
+    rebalanceHash,
+    optimizeHash,
+    withdrawHash,
+    chainId,
+    isOptimizeSuccess,
+    isRebalanceSuccess,
+    isWithdrawSuccess,
+    refetchPortfolio,
+    refetchYields,
+  ]);
 
   // Transaction step management
-  const initializeTransactionSteps = (type: 'invest' | 'rebalance' | 'withdraw') => {
+  const initializeTransactionSteps = (
+    type: "invest" | "rebalance" | "withdraw"
+  ) => {
     const baseSteps = [
-      { id: 'confirm', label: 'Confirm transaction', status: 'active' as const, description: 'Please confirm the transaction in your wallet' },
-      { id: 'pending', label: 'Processing transaction', status: 'pending' as const, description: 'Waiting for blockchain confirmation' },
-      { id: 'success', label: 'Transaction completed', status: 'pending' as const, description: 'Your portfolio has been updated' }
-    ]
+      {
+        id: "confirm",
+        label: "Confirm transaction",
+        status: "active" as const,
+        description: "Please confirm the transaction in your wallet",
+      },
+      {
+        id: "pending",
+        label: "Processing transaction",
+        status: "pending" as const,
+        description: "Waiting for blockchain confirmation",
+      },
+      {
+        id: "success",
+        label: "Transaction completed",
+        status: "pending" as const,
+        description: "Your portfolio has been updated",
+      },
+    ];
 
     const typeSpecificDescriptions = {
-      invest: 'Your investment is being allocated across DeFi protocols',
-      rebalance: 'Your portfolio is being rebalanced for optimal yields',
-      withdraw: 'Your funds are being withdrawn from all positions'
-    }
+      invest: "Your investment is being allocated across DeFi protocols",
+      rebalance: "Your portfolio is being rebalanced for optimal yields",
+      withdraw: "Your funds are being withdrawn from all positions",
+    };
 
-    baseSteps[2].description = typeSpecificDescriptions[type]
-    setTransactionSteps(baseSteps)
-    setIsTransactionModalOpen(true)
-  }
+    baseSteps[2].description = typeSpecificDescriptions[type];
+    setTransactionSteps(baseSteps);
+    setIsTransactionModalOpen(true);
+  };
 
-  const updateTransactionStep = (stepId: string, updates: Partial<TransactionStep>) => {
-    setTransactionSteps(prev => 
-      prev.map(step => 
-        step.id === stepId ? { ...step, ...updates } : step
-      )
-    )
-  }
+  const updateTransactionStep = (
+    stepId: string,
+    updates: Partial<TransactionStep>
+  ) => {
+    setTransactionSteps((prev) =>
+      prev.map((step) => (step.id === stepId ? { ...step, ...updates } : step))
+    );
+  };
 
   const advanceToNextStep = (currentStepId: string) => {
-    setTransactionSteps(prev => {
-      const currentIndex = prev.findIndex(step => step.id === currentStepId)
+    setTransactionSteps((prev) => {
+      const currentIndex = prev.findIndex((step) => step.id === currentStepId);
       return prev.map((step, index) => {
         if (index === currentIndex) {
-          return { ...step, status: 'completed' as const }
+          return { ...step, status: "completed" as const };
         } else if (index === currentIndex + 1) {
-          return { ...step, status: 'active' as const }
+          return { ...step, status: "active" as const };
         }
-        return step
-      })
-    })
-  }
+        return step;
+      });
+    });
+  };
 
   // Enhanced helper functions with transaction tracking
   const invest = async (amount: string, riskScore: number) => {
-    if (!contractAddress) throw new Error('Contract not available on this network')
-    
+    if (!contractAddress)
+      throw new Error("Contract not available on this network");
+
     try {
-      initializeTransactionSteps('invest')
-      setLastTransactionAmount(amount) // Store amount for transaction saving
-      
+      initializeTransactionSteps("invest");
+      setLastTransactionAmount(amount); // Store amount for transaction saving
+
       await optimizeYield({
         address: contractAddress,
         abi: YIELD_OPTIMIZER_ABI,
-        functionName: 'optimizeYield',
+        functionName: "optimizeYield",
         args: [riskScore],
         value: parseEther(amount),
-      })
+      });
     } catch (error) {
-      updateTransactionStep('confirm', { 
-        status: 'error', 
-        description: 'Transaction was rejected or failed' 
-      })
-      throw error
+      updateTransactionStep("confirm", {
+        status: "error",
+        description: "Transaction was rejected or failed",
+      });
+      throw error;
     }
-  }
+  };
 
   const rebalance = async () => {
-    if (!contractAddress) throw new Error('Contract not available on this network')
-    
+    if (!contractAddress)
+      throw new Error("Contract not available on this network");
+
     try {
-      initializeTransactionSteps('rebalance')
-      
+      initializeTransactionSteps("rebalance");
+
       await rebalancePortfolio({
         address: contractAddress,
         abi: YIELD_OPTIMIZER_ABI,
-        functionName: 'rebalance',
-      })
+        functionName: "rebalance",
+      });
     } catch (error) {
-      updateTransactionStep('confirm', { 
-        status: 'error', 
-        description: 'Transaction was rejected or failed' 
-      })
-      throw error
+      updateTransactionStep("confirm", {
+        status: "error",
+        description: "Transaction was rejected or failed",
+      });
+      throw error;
     }
-  }
+  };
 
   const withdraw = async () => {
-    if (!contractAddress) throw new Error('Contract not available on this network')
-    
+    if (!contractAddress)
+      throw new Error("Contract not available on this network");
+
     try {
-      initializeTransactionSteps('withdraw')
-      
+      initializeTransactionSteps("withdraw");
+
       await emergencyWithdraw({
         address: contractAddress,
         abi: YIELD_OPTIMIZER_ABI,
-        functionName: 'emergencyWithdraw',
-      })
+        functionName: "emergencyWithdraw",
+      });
     } catch (error) {
-      updateTransactionStep('confirm', { 
-        status: 'error', 
-        description: 'Transaction was rejected or failed' 
-      })
-      throw error
+      updateTransactionStep("confirm", {
+        status: "error",
+        description: "Transaction was rejected or failed",
+      });
+      throw error;
     }
-  }
+  };
 
   // Formatted data helpers
   const formatPortfolioData = () => {
-    if (!userPortfolio) return null
+    if (
+      !userPortfolio ||
+      !Array.isArray(userPortfolio) ||
+      userPortfolio.length < 3
+    ) {
+      return null;
+    }
 
-    const [profile, allocation, estimatedValue] = userPortfolio
-    
+    const [profile, allocation, estimatedValue] = userPortfolio;
+
     return {
       profile: {
         riskScore: profile.riskScore,
@@ -232,164 +322,220 @@ export function useYieldOptimizer() {
         autoRebalance: profile.autoRebalance,
       },
       allocation: {
-        benqiAmount: formatEther(allocation.benqiAmount),
+        aaveAmount: formatEther(allocation.aaveAmount), // Map aaveAmount from contract to frontend aaveAmount
         traderJoeAmount: formatEther(allocation.traderJoeAmount),
         yieldYakAmount: formatEther(allocation.yieldYakAmount),
       },
       estimatedValue: formatEther(estimatedValue),
-      totalValue: formatEther(allocation.benqiAmount + allocation.traderJoeAmount + allocation.yieldYakAmount),
-    }
-  }
+      totalValue: formatEther(
+        allocation.aaveAmount + // Use aaveAmount from contract
+          allocation.traderJoeAmount +
+          allocation.yieldYakAmount
+      ),
+    };
+  };
 
   const formatYieldsData = () => {
-    if (!currentYields) return null
+    if (
+      !currentYields ||
+      !Array.isArray(currentYields) ||
+      currentYields.length < 4
+    ) {
+      return null;
+    }
 
-    const [benqiAPY, traderJoeAPY, yieldYakAPY, lastUpdated] = currentYields
-    
+    const [aaveAPY, traderJoeAPY, yieldYakAPY, lastUpdated] = currentYields; // Contract now returns aaveAPY
+
     return {
-      benqi: Number(benqiAPY) / 100, // Convert from basis points to percentage
+      aave: Number(aaveAPY) / 100, // Map aaveAPY to aave for frontend compatibility
       traderJoe: Number(traderJoeAPY) / 100,
       yieldYak: Number(yieldYakAPY) / 100,
       lastUpdated: new Date(Number(lastUpdated) * 1000),
-    }
-  }
+    };
+  };
 
   const formatRebalanceData = () => {
-    if (!rebalanceRecommendation) return null
+    if (
+      !rebalanceRecommendation ||
+      !Array.isArray(rebalanceRecommendation) ||
+      rebalanceRecommendation.length < 4
+    ) {
+      return null;
+    }
 
-    const [shouldRebalance, newBenqi, newTraderJoe, newYieldYak] = rebalanceRecommendation
-    
+    const [shouldRebalance, newAave, newTraderJoe, newYieldYak] = // Contract now returns newAaveAllocation
+      rebalanceRecommendation;
+
     return {
       shouldRebalance,
       newAllocation: {
-        benqi: formatEther(newBenqi),
+        aave: formatEther(newAave), // Map aave from contract to frontend aave
         traderJoe: formatEther(newTraderJoe),
         yieldYak: formatEther(newYieldYak),
-      }
-    }
-  }
+      },
+    };
+  };
 
   // Transaction monitoring effects with backend saving
   useEffect(() => {
     if (optimizeHash && address) {
-      advanceToNextStep('confirm')
-      updateTransactionStep('pending', { 
+      advanceToNextStep("confirm");
+      updateTransactionStep("pending", {
         hash: optimizeHash,
-        description: 'Investment transaction is being processed on the blockchain'
-      })
-      
+        description:
+          "Investment transaction is being processed on the blockchain",
+      });
+
       // Save transaction to backend
-      apiClient.saveTransaction(address, {
-        type: 'deposit',
-        amount: lastTransactionAmount || '0',
-        hash: optimizeHash,
-        status: 'pending'
-      }).catch(err => console.error('Failed to save transaction:', err))
+      apiClient
+        .saveTransaction(address, {
+          type: "deposit",
+          amount: lastTransactionAmount || "0",
+          hash: optimizeHash,
+          status: "pending",
+        })
+        .catch((err) => console.error("Failed to save transaction:", err));
     }
-  }, [optimizeHash, address])
+  }, [optimizeHash, address]);
 
   useEffect(() => {
     if (rebalanceHash && address) {
-      advanceToNextStep('confirm')
-      updateTransactionStep('pending', { 
+      advanceToNextStep("confirm");
+      updateTransactionStep("pending", {
         hash: rebalanceHash,
-        description: 'Rebalance transaction is being processed on the blockchain'
-      })
-      
+        description:
+          "Rebalance transaction is being processed on the blockchain",
+      });
+
       // Save transaction to backend
-      apiClient.saveTransaction(address, {
-        type: 'rebalance',
-        amount: '0',
-        hash: rebalanceHash,
-        status: 'pending'
-      }).catch(err => console.error('Failed to save transaction:', err))
+      apiClient
+        .saveTransaction(address, {
+          type: "rebalance",
+          amount: "0",
+          hash: rebalanceHash,
+          status: "pending",
+        })
+        .catch((err) => console.error("Failed to save transaction:", err));
     }
-  }, [rebalanceHash, address])
+  }, [rebalanceHash, address]);
 
   useEffect(() => {
     if (withdrawHash && address) {
-      advanceToNextStep('confirm')
-      updateTransactionStep('pending', { 
+      advanceToNextStep("confirm");
+      updateTransactionStep("pending", {
         hash: withdrawHash,
-        description: 'Withdrawal transaction is being processed on the blockchain'
-      })
-      
-      // Save transaction to backend
-      const portfolio = formatPortfolioData()
-      const withdrawAmount = portfolio?.totalValue || '0'
-      apiClient.saveTransaction(address, {
-        type: 'withdraw',
-        amount: withdrawAmount,
-        hash: withdrawHash,
-        status: 'pending'
-      }).catch(err => console.error('Failed to save transaction:', err))
-    }
-  }, [withdrawHash, address])
+        description:
+          "Withdrawal transaction is being processed on the blockchain",
+      });
 
-  useEffect(() => {
-    if ((isOptimizeSuccess || isRebalanceSuccess || isWithdrawSuccess) && address) {
-      // First, advance from pending to success (makes success "active")
-      advanceToNextStep('pending')
-      
-      // Update transaction status to confirmed in backend
-      if (isOptimizeSuccess && optimizeHash) {
-        apiClient.saveTransaction(address, {
-          type: 'deposit',
-          amount: lastTransactionAmount || '0',
-          hash: optimizeHash,
-          status: 'confirmed'
-        }).catch(err => console.error('Failed to update transaction status:', err))
-      } else if (isRebalanceSuccess && rebalanceHash) {
-        apiClient.saveTransaction(address, {
-          type: 'rebalance',
-          amount: '0',
-          hash: rebalanceHash,
-          status: 'confirmed'
-        }).catch(err => console.error('Failed to update transaction status:', err))
-      } else if (isWithdrawSuccess && withdrawHash) {
-        const portfolio = formatPortfolioData()
-        const withdrawAmount = portfolio?.totalValue || '0'
-        apiClient.saveTransaction(address, {
-          type: 'withdraw',
+      // Save transaction to backend
+      const portfolio = formatPortfolioData();
+      const withdrawAmount = portfolio?.totalValue || "0";
+      apiClient
+        .saveTransaction(address, {
+          type: "withdraw",
           amount: withdrawAmount,
           hash: withdrawHash,
-          status: 'confirmed'
-        }).catch(err => console.error('Failed to update transaction status:', err))
+          status: "pending",
+        })
+        .catch((err) => console.error("Failed to save transaction:", err));
+    }
+  }, [withdrawHash, address]);
+
+  useEffect(() => {
+    if (
+      (isOptimizeSuccess || isRebalanceSuccess || isWithdrawSuccess) &&
+      address
+    ) {
+      // First, advance from pending to success (makes success "active")
+      advanceToNextStep("pending");
+
+      // Update transaction status to confirmed in backend
+      if (isOptimizeSuccess && optimizeHash) {
+        apiClient
+          .saveTransaction(address, {
+            type: "deposit",
+            amount: lastTransactionAmount || "0",
+            hash: optimizeHash,
+            status: "confirmed",
+          })
+          .catch((err) =>
+            console.error("Failed to update transaction status:", err)
+          );
+      } else if (isRebalanceSuccess && rebalanceHash) {
+        apiClient
+          .saveTransaction(address, {
+            type: "rebalance",
+            amount: "0",
+            hash: rebalanceHash,
+            status: "confirmed",
+          })
+          .catch((err) =>
+            console.error("Failed to update transaction status:", err)
+          );
+      } else if (isWithdrawSuccess && withdrawHash) {
+        const portfolio = formatPortfolioData();
+        const withdrawAmount = portfolio?.totalValue || "0";
+        apiClient
+          .saveTransaction(address, {
+            type: "withdraw",
+            amount: withdrawAmount,
+            hash: withdrawHash,
+            status: "confirmed",
+          })
+          .catch((err) =>
+            console.error("Failed to update transaction status:", err)
+          );
       }
-      
+
       // Then mark success as completed after a short delay
       setTimeout(() => {
-        updateTransactionStep('success', { status: 'completed' })
-        
+        updateTransactionStep("success", { status: "completed" });
+
         // Close modal after showing success for 2 seconds
         setTimeout(() => {
-          setIsTransactionModalOpen(false)
+          setIsTransactionModalOpen(false);
           // Refresh portfolio data
-          refetchPortfolio()
-          refetchYields()
-        }, 2000)
-      }, 500)
+          refetchPortfolio();
+          refetchYields();
+          // Also refresh backend portfolio data for USD values
+          refreshBackendPortfolio();
+        }, 2000);
+      }, 500);
     }
-  }, [isOptimizeSuccess, isRebalanceSuccess, isWithdrawSuccess, address, optimizeHash, rebalanceHash, withdrawHash, lastTransactionAmount])
+  }, [
+    isOptimizeSuccess,
+    isRebalanceSuccess,
+    isWithdrawSuccess,
+    address,
+    optimizeHash,
+    rebalanceHash,
+    withdrawHash,
+    lastTransactionAmount,
+  ]);
 
   // Enhanced portfolio metrics
   const getPortfolioMetrics = () => {
-    const portfolio = formatPortfolioData()
-    if (!portfolio) return null
+    const portfolio = formatPortfolioData();
+    if (!portfolio) return null;
 
-    const totalValue = parseFloat(portfolio.totalValue)
-    const totalDeposited = parseFloat(portfolio.profile.totalDeposited)
-    const totalEarnings = totalValue - totalDeposited
-    const returnPercentage = totalDeposited > 0 ? (totalEarnings / totalDeposited) * 100 : 0
+    const totalValue = parseFloat(portfolio.totalValue);
+    const totalDeposited = parseFloat(portfolio.profile.totalDeposited);
+    const totalEarnings = totalValue - totalDeposited;
+    const returnPercentage =
+      totalDeposited > 0 ? (totalEarnings / totalDeposited) * 100 : 0;
 
     return {
       totalValue,
       totalDeposited,
       totalEarnings,
       returnPercentage: Math.max(0, returnPercentage),
-      daysSinceLastRebalance: Math.floor((Date.now() - portfolio.profile.lastRebalance.getTime()) / (1000 * 60 * 60 * 24)),
-    }
-  }
+      daysSinceLastRebalance: Math.floor(
+        (Date.now() - portfolio.profile.lastRebalance.getTime()) /
+          (1000 * 60 * 60 * 24)
+      ),
+    };
+  };
 
   return {
     // Read data
@@ -397,48 +543,48 @@ export function useYieldOptimizer() {
     yields: formatYieldsData(),
     rebalanceRec: formatRebalanceData(),
     portfolioMetrics: getPortfolioMetrics(),
-    
+
     // Loading states
     isLoadingPortfolio,
     isLoadingYields,
     isLoadingRebalance,
-    
+
     // Write functions
     invest,
     rebalance,
     withdraw,
-    
+
     // Transaction states
     isOptimizing,
     isOptimizeConfirming,
     isOptimizeSuccess,
     optimizeError,
-    
+
     isRebalancing,
     isRebalanceConfirming,
     isRebalanceSuccess,
     rebalanceError,
-    
+
     isWithdrawing,
     isWithdrawConfirming,
     isWithdrawSuccess,
     withdrawError,
-    
+
     // Enhanced transaction tracking
     transactionSteps,
     isTransactionModalOpen,
     closeTransactionModal: () => setIsTransactionModalOpen(false),
-    
+
     // Refetch functions
     refetchPortfolio,
     refetchYields,
-    
+
     // Real-time data
     lastRefreshTime,
     currentBlock: blockNumber,
-    
+
     // Contract info
     contractAddress,
     isContractAvailable: !!contractAddress,
-  }
+  };
 }

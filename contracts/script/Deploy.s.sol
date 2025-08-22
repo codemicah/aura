@@ -1,167 +1,288 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.23;
 
-import "@forge-std/Script.sol";
-import "@forge-std/console.sol";
-import "../src/YieldOptimizer.sol";
+import {Script, console} from "forge-std/Script.sol";
+import {YieldOptimizer} from "../src/YieldOptimizer.sol";
+import {NetworkConfig} from "./config/NetworkConfig.sol";
 
 /**
  * @title DeployScript
- * @dev Deployment script for YieldOptimizer contract
- * @notice This script deploys the YieldOptimizer contract and sets up initial configuration
+ * @dev Industry standard deployment script for YieldOptimizer contract
+ * @notice This script deploys the YieldOptimizer contract with environment-based configuration
+ *
+ * Usage:
+ * - Local: make deploy-local
+ * - Fuji: PRIVATE_KEY=0x... make deploy-fuji
+ * - Mainnet: PRIVATE_KEY=0x... make deploy-mainnet
  */
 contract DeployScript is Script {
-    // Avalanche Mainnet Protocol Addresses
-    address constant AVALANCHE_TRADERJOE_ROUTER = 0x60aE616a2155Ee3d9A68541Ba4544862310933d4;
-    address constant AVALANCHE_BENQI_COMPTROLLER = 0x486Af39519B4Dc9a7fCcd318217352830E8AD9b4;
-    address constant AVALANCHE_YIELDYAK_FARM = 0xC4729E56b831d74bBc18797e0e17A295fA77488c;
-    
-    // Avalanche Fuji Testnet Protocol Addresses (for testing)
-    address constant FUJI_TRADERJOE_ROUTER = 0xd7f655E3376cE2D7A2b08fF01Eb3B1023191A901;
-    address constant FUJI_BENQI_COMPTROLLER = 0xe194c4c5aC32a3C9ffDb358d9Bfd523a0B6d1568;
-    address constant FUJI_YIELDYAK_FARM = 0x0000000000000000000000000000000000000000; // Mock address for testing
-
     // Initial yield rates (basis points)
-    uint256 constant INITIAL_BENQI_APY = 500;    // 5%
+    uint256 constant INITIAL_AAVE_APY = 500; // 5%
     uint256 constant INITIAL_TRADERJOE_APY = 800; // 8%
     uint256 constant INITIAL_YIELDYAK_APY = 1200; // 12%
 
+    // Default Anvil private key (for local development only)
+    uint256 constant DEFAULT_ANVIL_KEY =
+        0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80;
+
     YieldOptimizer public yieldOptimizer;
 
-    function run() public {
-        uint256 deployerPrivateKey = vm.envUint("PRIVATE_KEY");
-        address deployer = vm.addr(deployerPrivateKey);
-        
-        console.log("Deploying YieldOptimizer with deployer:", deployer);
-        console.log("Deployer balance:", deployer.balance / 1 ether, "AVAX");
+    function run() external returns (YieldOptimizer) {
+        // Get network configuration
+        NetworkConfig.Config memory config = getNetworkConfig();
 
+        // Get deployer private key based on environment
+        uint256 deployerPrivateKey = getDeployerPrivateKey();
+        address deployer = vm.addr(deployerPrivateKey);
+
+        console.log("=== Deployment Configuration ===");
+        console.log("Chain ID:", block.chainid);
+        console.log("Deployer:", deployer);
+        console.log("Balance:", deployer.balance / 1e18, "ETH");
+
+        _logNetworkConfig(config);
+
+        // Deploy the contract
         vm.startBroadcast(deployerPrivateKey);
 
-        // Deploy YieldOptimizer contract
-        yieldOptimizer = new YieldOptimizer();
+        yieldOptimizer = new YieldOptimizer(
+            config.traderJoeRouter,
+            config.yieldYakFarm,
+            config.wavax,
+            config.usdc
+        );
+
         console.log("YieldOptimizer deployed at:", address(yieldOptimizer));
-
-        // Determine which network we're on and set appropriate protocol addresses
-        uint256 chainId = block.chainid;
-        console.log("Chain ID:", chainId);
-
-        if (chainId == 43114) {
-            // Avalanche Mainnet
-            console.log("Configuring for Avalanche Mainnet...");
-            _configureMainnet();
-        } else if (chainId == 43113) {
-            // Avalanche Fuji Testnet
-            console.log("Configuring for Avalanche Fuji Testnet...");
-            _configureFuji();
-        } else {
-            // Local/Other network - use mock addresses
-            console.log("Configuring for local/test network...");
-            _configureLocal();
-        }
 
         // Set initial yield rates
         yieldOptimizer.updateYields(
-            INITIAL_BENQI_APY,
-            INITIAL_TRADERJOE_APY, 
+            INITIAL_AAVE_APY,
+            INITIAL_TRADERJOE_APY,
             INITIAL_YIELDYAK_APY
         );
 
-        console.log("Initial yields configured:");
-        console.log("- Benqi APY:", INITIAL_BENQI_APY, "basis points");
-        console.log("- TraderJoe APY:", INITIAL_TRADERJOE_APY, "basis points");
-        console.log("- YieldYak APY:", INITIAL_YIELDYAK_APY, "basis points");
-
-        // Verify deployment
-        _verifyDeployment();
+        console.log("Initial yields configured");
 
         vm.stopBroadcast();
 
-        console.log("\n=== Deployment Summary ===");
-        console.log("YieldOptimizer:", address(yieldOptimizer));
-        console.log("Owner:", yieldOptimizer.owner());
-        console.log("TraderJoe Router:", yieldOptimizer.traderJoeRouter());
-        console.log("Benqi Comptroller:", yieldOptimizer.benqiComptroller());
-        console.log("YieldYak Farm:", yieldOptimizer.yieldYakFarm());
-        
-        (uint256 benqiAPY, uint256 traderJoeAPY, uint256 yieldYakAPY,) = yieldOptimizer.getCurrentYields();
-        console.log("Current Yields:");
-        console.log("- Benqi APY:", benqiAPY);
-        console.log("- TraderJoe APY:", traderJoeAPY);
-        console.log("- YieldYak APY:", yieldYakAPY);
-        
-        console.log("\n=== Next Steps ===");
-        console.log("1. Update frontend with contract address:", address(yieldOptimizer));
-        console.log("2. Update backend with contract address and ABI");
-        console.log("3. Test with small deposits on testnet first");
-        console.log("4. Consider setting up automated yield updates");
+        // Verify deployment
+        _verifyDeployment(config);
+
+        _printDeploymentSummary();
+
+        return yieldOptimizer;
     }
 
-    function _configureMainnet() internal {
-        yieldOptimizer.updateProtocolAddress("traderjoe", AVALANCHE_TRADERJOE_ROUTER);
-        yieldOptimizer.updateProtocolAddress("benqi", AVALANCHE_BENQI_COMPTROLLER);
-        yieldOptimizer.updateProtocolAddress("yieldyak", AVALANCHE_YIELDYAK_FARM);
-        
-        console.log("Mainnet protocol addresses configured:");
-        console.log("- TraderJoe Router:", AVALANCHE_TRADERJOE_ROUTER);
-        console.log("- Benqi Comptroller:", AVALANCHE_BENQI_COMPTROLLER);
-        console.log("- YieldYak Farm:", AVALANCHE_YIELDYAK_FARM);
+    /**
+     * @dev Get network-specific configuration based on chain ID
+     */
+    function getNetworkConfig()
+        internal
+        view
+        returns (NetworkConfig.Config memory)
+    {
+        uint256 chainId = block.chainid;
+
+        if (chainId == 43114) {
+            console.log("Network: Avalanche Mainnet");
+            return NetworkConfig.getMainnetConfig();
+        } else if (chainId == 43113) {
+            // Could be real Fuji or local fork of Fuji
+            if (_isLocalAnvil()) {
+                console.log(
+                    "Network: Local Fork (Fuji) - preserving chain ID 43113"
+                );
+                return NetworkConfig.getFujiConfig();
+            } else {
+                console.log("Network: Avalanche Fuji Testnet");
+                return NetworkConfig.getFujiConfig();
+            }
+        } else if (chainId == 31337) {
+            // Legacy: Local Anvil with custom chain ID - check for fork mode
+            if (_isForkedNetwork()) {
+                console.log(
+                    "Network: Local Fork (Fuji) - custom chain ID 31337"
+                );
+                return NetworkConfig.getFujiConfig();
+            } else {
+                console.log("Network: Local Development");
+                console.log(
+                    "WARNING: Using mock addresses - for testing only!"
+                );
+                return NetworkConfig.getLocalConfig();
+            }
+        } else {
+            revert("Unsupported network");
+        }
     }
 
-    function _configureFuji() internal {
-        yieldOptimizer.updateProtocolAddress("traderjoe", FUJI_TRADERJOE_ROUTER);
-        yieldOptimizer.updateProtocolAddress("benqi", FUJI_BENQI_COMPTROLLER);
-        yieldOptimizer.updateProtocolAddress("yieldyak", FUJI_YIELDYAK_FARM);
-        
-        console.log("Fuji testnet protocol addresses configured:");
-        console.log("- TraderJoe Router:", FUJI_TRADERJOE_ROUTER);
-        console.log("- Benqi Comptroller:", FUJI_BENQI_COMPTROLLER);
-        console.log("- YieldYak Farm:", FUJI_YIELDYAK_FARM);
+    /**
+     * @dev Get deployer private key based on environment
+     */
+    function getDeployerPrivateKey() internal view returns (uint256) {
+        uint256 chainId = block.chainid;
+
+        // Check if this is a local Anvil instance
+        if (chainId == 31337 || _isLocalAnvil()) {
+            // Local Anvil - use default key unless PRIVATE_KEY is provided
+            uint256 providedKey = vm.envOr("PRIVATE_KEY", uint256(0));
+            if (providedKey != 0) {
+                console.log("Using provided PRIVATE_KEY for local deployment");
+                return providedKey;
+            }
+            console.log("Using default Anvil private key");
+            return DEFAULT_ANVIL_KEY;
+        } else {
+            // Live networks - require PRIVATE_KEY
+            uint256 privateKey = vm.envOr("PRIVATE_KEY", uint256(0));
+            require(
+                privateKey != 0,
+                "PRIVATE_KEY environment variable required for live networks"
+            );
+            require(
+                privateKey != DEFAULT_ANVIL_KEY,
+                "Cannot use default Anvil key for live networks"
+            );
+            console.log("Using provided PRIVATE_KEY for live deployment");
+            return privateKey;
+        }
     }
 
-    function _configureLocal() internal {
-        // Create mock addresses for local testing
-        address mockTraderJoe = makeAddr("mockTraderJoe");
-        address mockBenqi = makeAddr("mockBenqi");
-        address mockYieldYak = makeAddr("mockYieldYak");
-        
-        yieldOptimizer.updateProtocolAddress("traderjoe", mockTraderJoe);
-        yieldOptimizer.updateProtocolAddress("benqi", mockBenqi);
-        yieldOptimizer.updateProtocolAddress("yieldyak", mockYieldYak);
-        
-        console.log("Local/test protocol addresses configured:");
-        console.log("- TraderJoe Router:", mockTraderJoe);
-        console.log("- Benqi Comptroller:", mockBenqi);
-        console.log("- YieldYak Farm:", mockYieldYak);
+    /**
+     * @dev Check if we're running on a local Anvil instance
+     * This detects Anvil even when it preserves the original chain ID
+     */
+    function _isLocalAnvil() internal view returns (bool) {
+        // Check for common Anvil indicators
+
+        // 1. Check if the RPC URL indicates localhost
+        // Note: This is not directly accessible in Solidity, so we use other methods
+
+        // 2. Check for IS_FORK environment variable (user sets this)
+        if (vm.envOr("IS_FORK", false)) {
+            return true;
+        }
+
+        // 3. Check if we have the default Anvil account with a very high balance
+        // Anvil gives each account 10,000 ETH by default
+        address defaultAnvilAccount = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
+        if (defaultAnvilAccount.balance >= 9999 ether) {
+            return true;
+        }
+
+        return false;
     }
 
-    function _verifyDeployment() internal view {
-        // Verify contract was deployed correctly
-        require(address(yieldOptimizer) != address(0), "YieldOptimizer deployment failed");
-        
-        // Verify initial configuration
-        require(yieldOptimizer.owner() != address(0), "Owner not set");
-        require(yieldOptimizer.traderJoeRouter() != address(0), "TraderJoe router not set");
-        require(yieldOptimizer.benqiComptroller() != address(0), "Benqi comptroller not set");
-        require(yieldOptimizer.yieldYakFarm() != address(0), "YieldYak farm not set");
-        
-        // Verify yields are set
-        (uint256 benqiAPY, uint256 traderJoeAPY, uint256 yieldYakAPY, uint256 lastUpdated) = 
-            yieldOptimizer.getCurrentYields();
-        require(benqiAPY > 0, "Benqi APY not set");
-        require(traderJoeAPY > 0, "TraderJoe APY not set");
-        require(yieldYakAPY > 0, "YieldYak APY not set");
-        require(lastUpdated > 0, "Yields timestamp not set");
-        
-        // Verify constants
-        require(yieldOptimizer.MIN_DEPOSIT() == 0.01 ether, "MIN_DEPOSIT incorrect");
-        require(yieldOptimizer.REBALANCE_THRESHOLD() == 500, "REBALANCE_THRESHOLD incorrect");
-        require(yieldOptimizer.BASIS_POINTS() == 10000, "BASIS_POINTS incorrect");
-        
+    /**
+     * @dev Check if we're running on a forked network (legacy function)
+     */
+    function _isForkedNetwork() internal view returns (bool) {
+        // Check IS_FORK environment variable
+        if (vm.envOr("IS_FORK", false)) {
+            return true;
+        }
+
+        // Auto-detect by checking if real protocol contracts exist
+        address fujiWAVAX = 0xd00ae08403B9bbb9124bB305C09058E32C39A48c;
+        return fujiWAVAX.code.length > 0;
+    }
+
+    /**
+     * @dev Log network configuration
+     */
+    function _logNetworkConfig(
+        NetworkConfig.Config memory config
+    ) internal pure {
+        console.log("=== Protocol Addresses ===");
+        console.log("TraderJoe Router:", config.traderJoeRouter);
+        console.log("YieldYak Farm:", config.yieldYakFarm);
+        console.log("WAVAX:", config.wavax);
+        console.log("USDC:", config.usdc);
+    }
+
+    /**
+     * @dev Verify deployment succeeded
+     */
+    function _verifyDeployment(
+        NetworkConfig.Config memory config
+    ) internal view {
+        require(
+            address(yieldOptimizer) != address(0),
+            "YieldOptimizer deployment failed"
+        );
+        require(
+            yieldOptimizer.owner() == vm.addr(getDeployerPrivateKey()),
+            "Owner not set correctly"
+        );
+
+        // Verify protocol addresses
+        require(
+            yieldOptimizer.traderJoeRouter() == config.traderJoeRouter,
+            "TraderJoe router mismatch"
+        );
+        require(
+            yieldOptimizer.yieldYakFarm() == config.yieldYakFarm,
+            "YieldYak farm mismatch"
+        );
+
+        // Check if protocol addresses have code (for fork/live networks)
+        bool shouldHaveRealContracts = (block.chainid == 43114) ||
+            (block.chainid == 43113 && !_isLocalAnvil()) ||
+            (block.chainid == 31337 && _isForkedNetwork()) ||
+            _isLocalAnvil();
+
+        if (shouldHaveRealContracts) {
+            if (config.traderJoeRouter.code.length == 0) {
+                console.log("WARNING: TraderJoe router has no code!");
+            }
+            if (config.yieldYakFarm.code.length == 0) {
+                console.log("WARNING: YieldYak farm has no code!");
+            }
+        }
+
+        // Verify yields were set
+        (
+            uint256 aaveAPY,
+            uint256 traderJoeAPY,
+            uint256 yieldYakAPY,
+
+        ) = yieldOptimizer.getCurrentYields();
+        require(aaveAPY == INITIAL_AAVE_APY, "Aave APY not set correctly");
+        require(
+            traderJoeAPY == INITIAL_TRADERJOE_APY,
+            "TraderJoe APY not set correctly"
+        );
+        require(
+            yieldYakAPY == INITIAL_YIELDYAK_APY,
+            "YieldYak APY not set correctly"
+        );
+
         console.log("Deployment verification completed successfully");
     }
 
-    // Create deterministic addresses for testing (override forge-std version)
-    function makeAddr(string memory name) internal pure override returns (address) {
-        return address(uint160(uint256(keccak256(abi.encodePacked(name)))));
+    /**
+     * @dev Print deployment summary
+     */
+    function _printDeploymentSummary() internal view {
+        console.log("\n=== Deployment Summary ===");
+        console.log("YieldOptimizer:", address(yieldOptimizer));
+        console.log("Owner:", yieldOptimizer.owner());
+
+        (
+            uint256 aaveAPY,
+            uint256 traderJoeAPY,
+            uint256 yieldYakAPY,
+
+        ) = yieldOptimizer.getCurrentYields();
+        console.log("Initial Yields:");
+        console.log("- Aave APY:", aaveAPY, "bp");
+        console.log("- TraderJoe APY:", traderJoeAPY, "bp");
+        console.log("- YieldYak APY:", yieldYakAPY, "bp");
+
+        console.log("\n=== Next Steps ===");
+        console.log("1. Update frontend with contract address");
+        console.log("2. Update backend with contract address and ABI");
+        console.log("3. Test with small deposits first");
+        console.log("4. Set up automated yield updates");
     }
 }
