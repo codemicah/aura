@@ -108,27 +108,6 @@ No human intervention required:
 | Balanced     | 11.2%         | 1.65         | +3.8%               |
 | Aggressive   | 15.8%         | 1.45         | +5.2%               |
 
-## 🚀 Quick Start
-
-Get AURA running in minutes:
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/aura-defi-agent.git
-cd aura-defi-agent
-
-# Run the setup script
-./setup.sh
-
-# Start AURA
-./start.sh
-```
-
-For detailed setup instructions:
-
-- [Backend Setup](backend/README.md) - AI agent and API configuration
-- [Frontend Setup](frontend/README.md) - Web interface installation
-- [Smart Contracts](contracts/README.md) - Contract deployment guide
 
 ## 🏗️ System Architecture
 
