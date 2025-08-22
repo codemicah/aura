@@ -3,29 +3,29 @@ pragma solidity ^0.8.23;
 
 import "forge-std/Test.sol";
 import "../src/YieldOptimizer.sol";
-import "./MockTraderJoeVault.sol";
 
 contract YieldOptimizerTest is Test {
     YieldOptimizer public yieldOptimizer;
-    MockTraderJoeVault public mockVault;
     address public constant ALICE = address(0x1);
 
     function setUp() public {
         // Create mock addresses for testing
         address mockTraderJoe = address(0x2);
-        address mockBenqi = address(0x3);
+        address mockAave = address(0x3);
         address mockYieldYak = address(0x4);
         address mockWAVAX = address(0x5);
         address mockUSDC = address(0x6);
 
         yieldOptimizer = new YieldOptimizer(
             mockTraderJoe,
-            mockBenqi,
+            mockAave,
             mockYieldYak,
             mockWAVAX,
             mockUSDC
         );
-        mockVault = new MockTraderJoeVault();
+
+        // Set up TraderJoe pair address for testing
+        yieldOptimizer.updateProtocolAddress("traderjoe_pair", address(0x7));
     }
 
     function testYieldOptimization() public {

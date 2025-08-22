@@ -16,12 +16,14 @@ import {
 } from "../config/contracts";
 import type { TransactionStep } from "../components/TransactionStatus";
 import { apiClient } from "@/utils/api";
+import { usePortfolio } from "./usePortfolio";
 
 export function useYieldOptimizer() {
   const { address } = useAccount();
   const chainId = useChainId();
   const contractAddress = YIELD_OPTIMIZER_ADDRESS;
   const { data: blockNumber } = useBlockNumber({ watch: true });
+  const { refresh: refreshBackendPortfolio } = usePortfolio();
 
   // Enhanced transaction state management
   const [transactionSteps, setTransactionSteps] = useState<TransactionStep[]>(
@@ -496,6 +498,8 @@ export function useYieldOptimizer() {
           // Refresh portfolio data
           refetchPortfolio();
           refetchYields();
+          // Also refresh backend portfolio data for USD values
+          refreshBackendPortfolio();
         }, 2000);
       }, 500);
     }

@@ -160,7 +160,8 @@ export class BlockchainService {
           autoRebalance: portfolio[0].autoRebalance,
         },
         allocation: {
-          benqiAmount: formatEther(portfolio[1].benqiAmount),
+          aaveAmount: formatEther(portfolio[1].aaveAmount),
+          benqiAmount: formatEther(portfolio[1].aaveAmount), // Legacy support - same as Aave for compatibility
           traderJoeAmount: formatEther(portfolio[1].traderJoeAmount),
           yieldYakAmount: formatEther(portfolio[1].yieldYakAmount),
         },

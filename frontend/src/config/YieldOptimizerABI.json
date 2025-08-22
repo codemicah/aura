@@ -7,26 +7,14 @@
         "type": "address",
         "internalType": "address"
       },
-      {
-        "name": "_aavePool",
-        "type": "address",
-        "internalType": "address"
-      },
+      { "name": "_aavePool", "type": "address", "internalType": "address" },
       {
         "name": "_yieldYakFarm",
         "type": "address",
         "internalType": "address"
       },
-      {
-        "name": "_wavax",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "_usdc",
-        "type": "address",
-        "internalType": "address"
-      }
+      { "name": "_wavax", "type": "address", "internalType": "address" },
+      { "name": "_usdc", "type": "address", "internalType": "address" }
     ],
     "stateMutability": "nonpayable"
   },
@@ -34,78 +22,42 @@
     "type": "function",
     "name": "BASIS_POINTS",
     "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
     "stateMutability": "view"
   },
   {
     "type": "function",
     "name": "MIN_DEPOSIT",
     "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
     "stateMutability": "view"
   },
   {
     "type": "function",
     "name": "REBALANCE_THRESHOLD",
     "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
+    "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }],
     "stateMutability": "view"
   },
   {
     "type": "function",
     "name": "USDC",
     "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
     "stateMutability": "view"
   },
   {
     "type": "function",
     "name": "WAVAX",
     "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
     "stateMutability": "view"
   },
   {
     "type": "function",
     "name": "aavePool",
     "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
     "stateMutability": "view"
   },
   {
@@ -113,26 +65,14 @@
     "name": "currentYields",
     "inputs": [],
     "outputs": [
-      {
-        "name": "aaveAPY",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
+      { "name": "aaveAPY", "type": "uint256", "internalType": "uint256" },
       {
         "name": "traderJoeAPY",
         "type": "uint256",
         "internalType": "uint256"
       },
-      {
-        "name": "yieldYakAPY",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "lastUpdated",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
+      { "name": "yieldYakAPY", "type": "uint256", "internalType": "uint256" },
+      { "name": "lastUpdated", "type": "uint256", "internalType": "uint256" }
     ],
     "stateMutability": "view"
   },
@@ -148,26 +88,14 @@
     "name": "getCurrentYields",
     "inputs": [],
     "outputs": [
-      {
-        "name": "aaveAPY",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
+      { "name": "aaveAPY", "type": "uint256", "internalType": "uint256" },
       {
         "name": "traderJoeAPY",
         "type": "uint256",
         "internalType": "uint256"
       },
-      {
-        "name": "yieldYakAPY",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "lastUpdated",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
+      { "name": "yieldYakAPY", "type": "uint256", "internalType": "uint256" },
+      { "name": "lastUpdated", "type": "uint256", "internalType": "uint256" }
     ],
     "stateMutability": "view"
   },
@@ -175,18 +103,10 @@
     "type": "function",
     "name": "getRebalanceRecommendation",
     "inputs": [
-      {
-        "name": "user",
-        "type": "address",
-        "internalType": "address"
-      }
+      { "name": "user", "type": "address", "internalType": "address" }
     ],
     "outputs": [
-      {
-        "name": "shouldRebalance",
-        "type": "bool",
-        "internalType": "bool"
-      },
+      { "name": "shouldRebalance", "type": "bool", "internalType": "bool" },
       {
         "name": "newAaveAllocation",
         "type": "uint256",
@@ -209,11 +129,7 @@
     "type": "function",
     "name": "getUserPortfolio",
     "inputs": [
-      {
-        "name": "user",
-        "type": "address",
-        "internalType": "address"
-      }
+      { "name": "user", "type": "address", "internalType": "address" }
     ],
     "outputs": [
       {
@@ -221,11 +137,7 @@
         "type": "tuple",
         "internalType": "struct YieldOptimizer.UserProfile",
         "components": [
-          {
-            "name": "riskScore",
-            "type": "uint8",
-            "internalType": "uint8"
-          },
+          { "name": "riskScore", "type": "uint8", "internalType": "uint8" },
           {
             "name": "totalDeposited",
             "type": "uint256",
@@ -236,11 +148,7 @@
             "type": "uint256",
             "internalType": "uint256"
           },
-          {
-            "name": "autoRebalance",
-            "type": "bool",
-            "internalType": "bool"
-          }
+          { "name": "autoRebalance", "type": "bool", "internalType": "bool" }
         ]
       },
       {
@@ -277,11 +185,7 @@
     "type": "function",
     "name": "optimizeYield",
     "inputs": [
-      {
-        "name": "_riskScore",
-        "type": "uint8",
-        "internalType": "uint8"
-      }
+      { "name": "_riskScore", "type": "uint8", "internalType": "uint8" }
     ],
     "outputs": [],
     "stateMutability": "payable"
@@ -290,13 +194,7 @@
     "type": "function",
     "name": "owner",
     "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
     "stateMutability": "view"
   },
   {
@@ -317,16 +215,8 @@
     "type": "function",
     "name": "setTokenAddresses",
     "inputs": [
-      {
-        "name": "_wavax",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "_usdc",
-        "type": "address",
-        "internalType": "address"
-      }
+      { "name": "_wavax", "type": "address", "internalType": "address" },
+      { "name": "_usdc", "type": "address", "internalType": "address" }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -335,37 +225,21 @@
     "type": "function",
     "name": "traderJoePair",
     "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
     "stateMutability": "view"
   },
   {
     "type": "function",
     "name": "traderJoeRouter",
     "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
     "stateMutability": "view"
   },
   {
     "type": "function",
     "name": "transferOwnership",
     "inputs": [
-      {
-        "name": "newOwner",
-        "type": "address",
-        "internalType": "address"
-      }
+      { "name": "newOwner", "type": "address", "internalType": "address" }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -374,16 +248,8 @@
     "type": "function",
     "name": "updateProtocolAddress",
     "inputs": [
-      {
-        "name": "protocol",
-        "type": "string",
-        "internalType": "string"
-      },
-      {
-        "name": "newAddress",
-        "type": "address",
-        "internalType": "address"
-      }
+      { "name": "protocol", "type": "string", "internalType": "string" },
+      { "name": "newAddress", "type": "address", "internalType": "address" }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -392,21 +258,13 @@
     "type": "function",
     "name": "updateYields",
     "inputs": [
-      {
-        "name": "_aaveAPY",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
+      { "name": "_aaveAPY", "type": "uint256", "internalType": "uint256" },
       {
         "name": "_traderJoeAPY",
         "type": "uint256",
         "internalType": "uint256"
       },
-      {
-        "name": "_yieldYakAPY",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
+      { "name": "_yieldYakAPY", "type": "uint256", "internalType": "uint256" }
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
@@ -414,19 +272,9 @@
   {
     "type": "function",
     "name": "userAllocations",
-    "inputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
+    "inputs": [{ "name": "", "type": "address", "internalType": "address" }],
     "outputs": [
-      {
-        "name": "aaveAmount",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
+      { "name": "aaveAmount", "type": "uint256", "internalType": "uint256" },
       {
         "name": "traderJoeAmount",
         "type": "uint256",
@@ -443,19 +291,9 @@
   {
     "type": "function",
     "name": "userProfiles",
-    "inputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
+    "inputs": [{ "name": "", "type": "address", "internalType": "address" }],
     "outputs": [
-      {
-        "name": "riskScore",
-        "type": "uint8",
-        "internalType": "uint8"
-      },
+      { "name": "riskScore", "type": "uint8", "internalType": "uint8" },
       {
         "name": "totalDeposited",
         "type": "uint256",
@@ -466,11 +304,7 @@
         "type": "uint256",
         "internalType": "uint256"
       },
-      {
-        "name": "autoRebalance",
-        "type": "bool",
-        "internalType": "bool"
-      }
+      { "name": "autoRebalance", "type": "bool", "internalType": "bool" }
     ],
     "stateMutability": "view"
   },
@@ -478,13 +312,7 @@
     "type": "function",
     "name": "yieldYakFarm",
     "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "address",
-        "internalType": "address"
-      }
-    ],
+    "outputs": [{ "name": "", "type": "address", "internalType": "address" }],
     "stateMutability": "view"
   },
   {
@@ -617,27 +445,15 @@
     "type": "error",
     "name": "OwnableInvalidOwner",
     "inputs": [
-      {
-        "name": "owner",
-        "type": "address",
-        "internalType": "address"
-      }
+      { "name": "owner", "type": "address", "internalType": "address" }
     ]
   },
   {
     "type": "error",
     "name": "OwnableUnauthorizedAccount",
     "inputs": [
-      {
-        "name": "account",
-        "type": "address",
-        "internalType": "address"
-      }
+      { "name": "account", "type": "address", "internalType": "address" }
     ]
   },
-  {
-    "type": "error",
-    "name": "ReentrancyGuardReentrantCall",
-    "inputs": []
-  }
+  { "type": "error", "name": "ReentrancyGuardReentrantCall", "inputs": [] }
 ]

@@ -88,22 +88,12 @@ contract DeployScript is Script {
             console.log("Network: Avalanche Mainnet");
             return NetworkConfig.getMainnetConfig();
         } else if (chainId == 43113) {
-            // Could be real Fuji or local fork of Fuji
-            if (_isLocalAnvil()) {
-                console.log(
-                    "Network: Local Fork (Fuji) - preserving chain ID 43113"
-                );
-                return NetworkConfig.getFujiConfig();
-            } else {
-                console.log("Network: Avalanche Fuji Testnet");
-                return NetworkConfig.getFujiConfig();
-            }
+            console.log("Network: Avalanche Fuji Testnet");
+            return NetworkConfig.getFujiConfig();
         } else if (chainId == 31337) {
-            // Legacy: Local Anvil with custom chain ID - check for fork mode
+            // Local Anvil - check for fork mode
             if (_isForkedNetwork()) {
-                console.log(
-                    "Network: Local Fork (Fuji) - custom chain ID 31337"
-                );
+                console.log("Network: Local Fork (Fuji)");
                 return NetworkConfig.getFujiConfig();
             } else {
                 console.log("Network: Local Development");
@@ -123,8 +113,7 @@ contract DeployScript is Script {
     function getDeployerPrivateKey() internal view returns (uint256) {
         uint256 chainId = block.chainid;
 
-        // Check if this is a local Anvil instance
-        if (chainId == 31337 || _isLocalAnvil()) {
+        if (chainId == 31337) {
             // Local Anvil - use default key unless PRIVATE_KEY is provided
             uint256 providedKey = vm.envOr("PRIVATE_KEY", uint256(0));
             if (providedKey != 0) {
@@ -150,32 +139,7 @@ contract DeployScript is Script {
     }
 
     /**
-     * @dev Check if we're running on a local Anvil instance
-     * This detects Anvil even when it preserves the original chain ID
-     */
-    function _isLocalAnvil() internal view returns (bool) {
-        // Check for common Anvil indicators
-
-        // 1. Check if the RPC URL indicates localhost
-        // Note: This is not directly accessible in Solidity, so we use other methods
-
-        // 2. Check for IS_FORK environment variable (user sets this)
-        if (vm.envOr("IS_FORK", false)) {
-            return true;
-        }
-
-        // 3. Check if we have the default Anvil account with a very high balance
-        // Anvil gives each account 10,000 ETH by default
-        address defaultAnvilAccount = 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266;
-        if (defaultAnvilAccount.balance >= 9999 ether) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * @dev Check if we're running on a forked network (legacy function)
+     * @dev Check if we're running on a forked network
      */
     function _isForkedNetwork() internal view returns (bool) {
         // Check IS_FORK environment variable
@@ -232,12 +196,7 @@ contract DeployScript is Script {
         );
 
         // Check if protocol addresses have code (for fork/live networks)
-        bool shouldHaveRealContracts = (block.chainid == 43114) ||
-            (block.chainid == 43113 && !_isLocalAnvil()) ||
-            (block.chainid == 31337 && _isForkedNetwork()) ||
-            _isLocalAnvil();
-
-        if (shouldHaveRealContracts) {
+        if (block.chainid != 31337 || _isForkedNetwork()) {
             if (config.traderJoeRouter.code.length == 0) {
                 console.log("WARNING: TraderJoe router has no code!");
             }

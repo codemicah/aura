@@ -19,7 +19,7 @@ contract YieldOptimizerTest is Test {
     event YieldOptimized(address indexed user, uint256 amount, uint8 riskScore);
     event Rebalanced(address indexed user, uint256 totalValue);
     event YieldsUpdated(
-        uint256 benqiAPY,
+        uint256 aaveAPY,
         uint256 traderJoeAPY,
         uint256 yieldYakAPY
     );
@@ -43,6 +43,12 @@ contract YieldOptimizerTest is Test {
             config.yieldYakFarm,
             config.wavax,
             config.usdc
+        );
+
+        // Set up TraderJoe pair address for testing
+        optimizer.updateProtocolAddress(
+            "traderjoe_pair",
+            makeAddr("mockTraderJoePair")
         );
 
         // Fund test accounts with AVAX
