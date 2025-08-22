@@ -25,7 +25,7 @@ export interface RebalanceDecision {
   reason: string;
   urgency: "low" | "medium" | "high";
   newAllocation?: {
-    aave: number; // Use Aave instead of Benqi
+    aave: number;
     traderJoe: number;
     yieldYak: number;
   };
@@ -69,7 +69,7 @@ export class AutoRebalanceService {
   async evaluateRebalanceDecision(
     userProfile: UserProfile,
     currentAllocation: {
-      aave: number; // Use Aave instead of Benqi
+      aave: number;
       traderJoe: number;
       yieldYak: number;
     }
@@ -111,7 +111,7 @@ export class AutoRebalanceService {
         )}% from target`,
         urgency: driftAnalysis.maxDrift > 20 ? "high" : "medium",
         newAllocation: {
-          aave: targetAllocation.aave || 0, // Use Aave instead of Benqi
+          aave: targetAllocation.aave || 0,
           traderJoe: targetAllocation.traderJoe,
           yieldYak: targetAllocation.yieldYak,
         },
@@ -177,7 +177,7 @@ export class AutoRebalanceService {
     drifts: { aave: number; traderJoe: number; yieldYak: number };
   } {
     const drifts = {
-      aave: Math.abs(current.aave - target.aave), // Use Aave instead of Benqi
+      aave: Math.abs(current.aave - target.aave),
       traderJoe: Math.abs(current.traderJoe - target.traderJoe),
       yieldYak: Math.abs(current.yieldYak - target.yieldYak),
     };
@@ -224,7 +224,7 @@ export class AutoRebalanceService {
         )}% APY improvement opportunity`,
         urgency: apyImprovement > 300 ? "high" : "medium",
         newAllocation: {
-          aave: optimalAllocation.aave || 0, // Use Aave instead of Benqi
+          aave: optimalAllocation.aave || 0,
           traderJoe: optimalAllocation.traderJoe,
           yieldYak: optimalAllocation.yieldYak,
         },
@@ -295,7 +295,7 @@ export class AutoRebalanceService {
   async executeAutoRebalance(
     userAddress: string,
     newAllocation: {
-      aave: number; // Use Aave instead of Benqi
+      aave: number;
       traderJoe: number;
       yieldYak: number;
     }
@@ -361,7 +361,7 @@ export class AutoRebalanceService {
 
         // Evaluate rebalance decision
         const decision = await this.evaluateRebalanceDecision(userProfile, {
-          aave: Number(currentAllocation.allocation.aavePercentage || 0), // Use Aave instead of Benqi
+          aave: Number(currentAllocation.allocation.aavePercentage || 0),
           traderJoe: Number(currentAllocation.allocation.traderJoePercentage),
           yieldYak: Number(currentAllocation.allocation.yieldYakPercentage),
         });

@@ -45,15 +45,15 @@ paths:
             type: string
             example: "0x1234567890123456789012345678901234567890"
       responses:
-        '200':
+        "200":
           description: Portfolio data retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PortfolioResponse'
-        '404':
+                $ref: "#/components/schemas/PortfolioResponse"
+        "404":
           description: Portfolio not found
-        '500':
+        "500":
           description: Internal server error
 
   /portfolio/{address}/rebalance-recommendation:
@@ -69,12 +69,12 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Rebalance recommendation generated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RebalanceRecommendation'
+                $ref: "#/components/schemas/RebalanceRecommendation"
 
   /portfolio/transaction/{hash}:
     get:
@@ -90,12 +90,12 @@ paths:
             type: string
             example: "0xabcdef..."
       responses:
-        '200':
+        "200":
           description: Transaction status retrieved
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TransactionStatus'
+                $ref: "#/components/schemas/TransactionStatus"
 
   /market/yields:
     get:
@@ -104,12 +104,12 @@ paths:
       summary: Get protocol yields
       description: Get current APY rates for all integrated protocols
       responses:
-        '200':
+        "200":
           description: Protocol yields retrieved
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/YieldsResponse'
+                $ref: "#/components/schemas/YieldsResponse"
 
   /market/avax-price:
     get:
@@ -118,12 +118,12 @@ paths:
       summary: Get AVAX price
       description: Get current AVAX price in USD
       responses:
-        '200':
+        "200":
           description: AVAX price retrieved
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PriceResponse'
+                $ref: "#/components/schemas/PriceResponse"
 
   /market/protocol/{protocol}:
     get:
@@ -137,14 +137,14 @@ paths:
           required: true
           schema:
             type: string
-            enum: [benqi, traderjoe, yieldyak]
+            enum: [aave, traderjoe, yieldyak]
       responses:
-        '200':
+        "200":
           description: Protocol data retrieved
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ProtocolData'
+                $ref: "#/components/schemas/ProtocolData"
 
   /ai/risk-score:
     post:
@@ -157,14 +157,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/RiskAssessment'
+              $ref: "#/components/schemas/RiskAssessment"
       responses:
-        '200':
+        "200":
           description: Risk score calculated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RiskScoreResponse'
+                $ref: "#/components/schemas/RiskScoreResponse"
 
   /ai/allocation:
     post:
@@ -187,12 +187,12 @@ paths:
                   type: number
                   minimum: 100
       responses:
-        '200':
+        "200":
           description: Allocation strategy generated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AllocationStrategy'
+                $ref: "#/components/schemas/AllocationStrategy"
 
   /ai/surplus:
     post:
@@ -205,14 +205,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/SurplusCalculation'
+              $ref: "#/components/schemas/SurplusCalculation"
       responses:
-        '200':
+        "200":
           description: Surplus calculated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SurplusResponse'
+                $ref: "#/components/schemas/SurplusResponse"
 
   /ai/recommendation:
     post:
@@ -237,12 +237,12 @@ paths:
                 portfolio:
                   type: object
       responses:
-        '200':
+        "200":
           description: Recommendation generated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AIRecommendation'
+                $ref: "#/components/schemas/AIRecommendation"
 
   /analytics/metrics/{userId}:
     get:
@@ -257,12 +257,12 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Performance metrics retrieved
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PerformanceMetrics'
+                $ref: "#/components/schemas/PerformanceMetrics"
 
   /analytics/protocols/{userId}:
     get:
@@ -277,7 +277,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Protocol performance retrieved
           content:
             application/json:
@@ -289,7 +289,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/ProtocolPerformance'
+                      $ref: "#/components/schemas/ProtocolPerformance"
 
   /analytics/benchmarks/{userId}:
     get:
@@ -304,7 +304,7 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Benchmark comparisons retrieved
           content:
             application/json:
@@ -316,7 +316,7 @@ paths:
                   data:
                     type: array
                     items:
-                      $ref: '#/components/schemas/BenchmarkComparison'
+                      $ref: "#/components/schemas/BenchmarkComparison"
 
   /analytics/risk/{userId}:
     get:
@@ -331,12 +331,12 @@ paths:
           schema:
             type: string
       responses:
-        '200':
+        "200":
           description: Risk metrics retrieved
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RiskMetrics'
+                $ref: "#/components/schemas/RiskMetrics"
 
   /backtesting/run:
     post:
@@ -349,14 +349,14 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/BacktestRequest'
+              $ref: "#/components/schemas/BacktestRequest"
       responses:
-        '200':
+        "200":
           description: Backtesting completed
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/BacktestResult'
+                $ref: "#/components/schemas/BacktestResult"
 
   /backtesting/scenarios:
     post:
@@ -379,7 +379,7 @@ paths:
                     type: string
                     enum: [bull, bear, normal]
       responses:
-        '200':
+        "200":
           description: Scenario analysis completed
 
 components:
@@ -579,7 +579,7 @@ components:
         data:
           type: object
           properties:
-            benqi:
+            aave:
               type: number
             traderJoe:
               type: number
@@ -822,7 +822,7 @@ components:
       type: apiKey
       in: header
       name: X-API-Key
-    
+
     WalletSignature:
       type: http
       scheme: bearer

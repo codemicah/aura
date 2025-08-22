@@ -188,7 +188,7 @@ getCurrentYields(); // Aave APY mapped from contract
 
 ### Protocol Mappings
 
-- **Contract Index 0**: Aave V3 (replaces legacy Benqi)
+- **Contract Index 0**: Aave V3
 - **Contract Index 1**: TraderJoe
 - **Contract Index 2**: YieldYak
 
@@ -229,59 +229,9 @@ npm run test        # Run tests (TBD)
 npm run clean       # Clean build artifacts
 ```
 
-## 🧪 Demo Mode
-
-The backend includes three demo personas for testing:
-
-| User               | Risk Score | Strategy     |
-| ------------------ | ---------- | ------------ |
-| Sarah Thompson     | 28         | Conservative |
-| Mike Chen          | 52         | Balanced     |
-| Jennifer Rodriguez | 78         | Aggressive   |
-
-Run `npm run seed` to populate demo data.
-
-## 🚨 Troubleshooting
-
-**Protocol validation error**
-
-- Supported protocols: `aave`, `traderjoe`, `yieldyak`
-- Update any frontend calls from `benqi` to `aave`
-- Check API endpoint paths match new protocol names
-
-**Contract not deployed error**
-
-- Deploy YieldOptimizer contract first
-- Update YIELD_OPTIMIZER_ADDRESS in .env
-
-**Database errors**
-
-- Ensure ./data/ directory exists
-- Check write permissions
-- Run `npm run seed` to initialize
-
-**RPC connection failed**
-
-- Verify Avalanche RPC URL
-- Check network connectivity
-- Try alternative RPC endpoints
-
 ## 📋 Requirements
 
 - **Runtime**: Node.js 18+
 - **Database**: SQLite3
 - **Network**: Avalanche C-Chain access
 - **Contract**: Deployed YieldOptimizer
-
----
-
-## 🏆 Aave V3 Integration Benefits
-
-- **Enterprise-Grade Protocol**: $10B+ TVL, battle-tested security
-- **Stable Yields**: Lower volatility compared to alternative lending protocols
-- **Perfect Ecosystem Fit**: Circle USDC + Avalanche + Aave synergy
-- **Future-Proof**: Leading DeFi protocol with continuous development
-
----
-
-_AURA Backend - Autonomous AI for DeFi Management with Aave V3_

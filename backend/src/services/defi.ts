@@ -98,8 +98,6 @@ export class DeFiDataService {
   // Legacy Benqi support (kept for future use but not used in active allocations)
   private async getBenqiData(): Promise<YieldData[]> {
     try {
-      // Legacy Benqi data - kept for potential future use
-      logger.warn("Benqi data accessed but not used in active allocations");
       return [
         {
           protocol: "benqi",

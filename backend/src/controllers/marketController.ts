@@ -30,7 +30,7 @@ export class MarketController {
         success: true,
         data: {
           onChain: {
-            aave: onChainYields.aave, // Send Aave data instead of Benqi
+            aave: onChainYields.aave,
             traderJoe: onChainYields.traderJoe,
             yieldYak: onChainYields.yieldYak,
             lastUpdated: onChainYields.lastUpdated,
@@ -42,7 +42,7 @@ export class MarketController {
             yieldYak:
               protocolData.find((p) => p.protocol === "yieldyak")?.apy || 0,
           },
-          protocols: activeProtocols, // Only send active protocols (no Benqi)
+          protocols: activeProtocols,
           lastUpdated: new Date(),
         },
         timestamp: new Date(),

@@ -20,10 +20,10 @@ library NetworkConfig {
     function getFujiConfig() internal pure returns (Config memory) {
         return
             Config({
-                traderJoeRouter: 0xd7f655E3376cE2D7A2b08fF01Eb3B1023191A901, // Real TraderJoe Router ✅
+                traderJoeRouter: 0xb4315e873dBcf96Ffd0acd8EA43f689D8c20fB30, // Updated TraderJoe Router ✅
                 yieldYakFarm: 0x1DAff3C889Aff2f0b0C15E52E546c60CeCC2BBf6, // Real YieldYak Farm Testnet ✅
                 wavax: 0xd00ae08403B9bbb9124bB305C09058E32C39A48c, // Real WAVAX ✅
-                usdc: 0xB6076C93701D6a07266c31066B298AeC6dd65c2d // Real USDC Fuji ✅
+                usdc: 0x5425890298aed601595a70AB815c96711a31Bc65 // Real USDC Fuji ✅
             });
     }
 

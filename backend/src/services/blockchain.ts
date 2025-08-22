@@ -184,7 +184,7 @@ export class BlockchainService {
       logger.blockchain("Yields fetched", chainId);
 
       return {
-        aave: Number(yields[0]) / 100, // Map first yield to Aave (was Benqi)
+        aave: Number(yields[0]) / 100, // Map first yield to Aave
         benqi: Number(yields[0]) / 100, // Legacy support - same as Aave for compatibility
         traderJoe: Number(yields[1]) / 100,
         yieldYak: Number(yields[2]) / 100,

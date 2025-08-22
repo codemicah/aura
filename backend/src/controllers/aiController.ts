@@ -234,7 +234,7 @@ export class AIController {
         Conservative: {
           range: "0-33",
           description: "Prioritizes capital preservation with lower volatility",
-          allocation: { aave: 70, traderJoe: 30, yieldYak: 0 }, // Use Aave instead of Benqi
+          allocation: { aave: 70, traderJoe: 30, yieldYak: 0 },
           expectedAPY: "5.5-6.5%",
           suitableFor: [
             "New investors",
@@ -245,7 +245,7 @@ export class AIController {
         Balanced: {
           range: "34-66",
           description: "Balances growth potential with moderate risk",
-          allocation: { aave: 40, traderJoe: 40, yieldYak: 20 }, // Use Aave instead of Benqi
+          allocation: { aave: 40, traderJoe: 40, yieldYak: 20 },
           expectedAPY: "7.5-9.5%",
           suitableFor: [
             "Medium-term goals",
@@ -256,7 +256,7 @@ export class AIController {
         Aggressive: {
           range: "67-100",
           description: "Maximizes growth potential with higher volatility",
-          allocation: { aave: 20, traderJoe: 30, yieldYak: 50 }, // Use Aave instead of Benqi
+          allocation: { aave: 20, traderJoe: 30, yieldYak: 50 },
           expectedAPY: "10-13%",
           suitableFor: [
             "Long-term goals",
@@ -322,12 +322,12 @@ export class AIController {
       // Simple portfolio analysis (in production, this would be more sophisticated)
       const analysis = {
         currentAllocation: portfolioData?.allocation || {
-          aave: 0, // Use Aave instead of Benqi
+          aave: 0,
           traderJoe: 0,
           yieldYak: 0,
         },
         optimalAllocation: {
-          aave: optimalStrategy.aave, // Use Aave instead of Benqi
+          aave: optimalStrategy.aave,
           traderJoe: optimalStrategy.traderJoe,
           yieldYak: optimalStrategy.yieldYak,
         },

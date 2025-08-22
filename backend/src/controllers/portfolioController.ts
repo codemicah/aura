@@ -365,7 +365,7 @@ export class PortfolioController {
             await databaseService.createPortfolioSnapshot({
               userId: profile.id,
               totalValue: portfolio.estimatedValue,
-              aaveAmount: portfolio.allocation.aaveAmount || "0", // Use Aave instead of Benqi
+              aaveAmount: portfolio.allocation.aaveAmount || "0",
               benqiAmount: "0", // Legacy field, set to 0
               traderJoeAmount: portfolio.allocation.traderJoeAmount,
               yieldYakAmount: portfolio.allocation.yieldYakAmount,
@@ -460,7 +460,7 @@ export class PortfolioController {
             mockSnapshots.push({
               snapshotDate: date.toISOString(),
               totalValue: dayValue.toString(),
-              aaveAmount: (dayValue * 0.4).toString(), // 40% in Aave (replaces Benqi)
+              aaveAmount: (dayValue * 0.4).toString(), // 40% in Aave
               traderJoeAmount: (dayValue * 0.35).toString(), // 35% in TraderJoe
               yieldYakAmount: (dayValue * 0.25).toString(), // 25% in YieldYak
               avaxPrice: avaxPrice * (1 + (Math.random() * 0.02 - 0.01)), // Small price variation
@@ -481,7 +481,7 @@ export class PortfolioController {
           parseFloat(snapshot.totalValue || "0") * (snapshot.avaxPrice || 45),
         allocation: {
           aave:
-            parseFloat(snapshot.aaveAmount || "0") * (snapshot.avaxPrice || 45), // Use Aave instead of Benqi
+            parseFloat(snapshot.aaveAmount || "0") * (snapshot.avaxPrice || 45),
           traderJoe:
             parseFloat(snapshot.traderJoeAmount || "0") *
             (snapshot.avaxPrice || 45),

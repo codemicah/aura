@@ -103,7 +103,7 @@ contract YieldOptimizerTest is Test {
         assertGt(lastRebalance, 0);
         assertEq(autoRebalance, false);
 
-        // Check allocations (70% Benqi, 30% TraderJoe, 0% YieldYak)
+        // Check allocations (70% aave, 30% TraderJoe, 0% YieldYak)
         (
             uint256 aaveAmount,
             uint256 traderJoeAmount,
@@ -126,7 +126,7 @@ contract YieldOptimizerTest is Test {
 
         optimizer.optimizeYield{value: depositAmount}(riskScore);
 
-        // Check allocations (40% Benqi, 40% TraderJoe, 20% YieldYak)
+        // Check allocations (40% aave, 40% TraderJoe, 20% YieldYak)
         (
             uint256 aaveAmount,
             uint256 traderJoeAmount,

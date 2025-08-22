@@ -154,7 +154,7 @@ For detailed setup instructions:
                     Avalanche C-Chain
                           │
     ┌──────────┐ ┌──────────┐ ┌──────────┐
-    │  Benqi   │ │TraderJoe │ │ YieldYak │
+    │  Aave   │ │TraderJoe │ │ YieldYak │
     └──────────┘ └──────────┘ └──────────┘
 ```
 
@@ -170,7 +170,7 @@ For detailed setup instructions:
 
 AURA seamlessly manages funds across:
 
-- **Benqi** - Lending/borrowing for stable yields (5-7% APY)
+- **Aave** - Lending/borrowing for stable yields (5-7% APY)
 - **TraderJoe** - DEX liquidity provision (8-12% APY)
 - **YieldYak** - Auto-compounding strategies (12-18% APY)
 
