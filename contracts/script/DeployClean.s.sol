@@ -47,7 +47,6 @@ contract DeployScript is Script {
 
         yieldOptimizer = new YieldOptimizer(
             config.traderJoeRouter,
-            config.aavePool,
             config.yieldYakFarm,
             config.wavax,
             config.usdc
@@ -160,7 +159,6 @@ contract DeployScript is Script {
     ) internal pure {
         console.log("=== Protocol Addresses ===");
         console.log("TraderJoe Router:", config.traderJoeRouter);
-        console.log("Aave Pool:", config.aavePool);
         console.log("YieldYak Farm:", config.yieldYakFarm);
         console.log("WAVAX:", config.wavax);
         console.log("USDC:", config.usdc);
@@ -187,10 +185,6 @@ contract DeployScript is Script {
             "TraderJoe router mismatch"
         );
         require(
-            yieldOptimizer.aavePool() == config.aavePool,
-            "Aave pool mismatch"
-        );
-        require(
             yieldOptimizer.yieldYakFarm() == config.yieldYakFarm,
             "YieldYak farm mismatch"
         );
@@ -199,9 +193,6 @@ contract DeployScript is Script {
         if (block.chainid != 31337 || _isForkedNetwork()) {
             if (config.traderJoeRouter.code.length == 0) {
                 console.log("WARNING: TraderJoe router has no code!");
-            }
-            if (config.aavePool.code.length == 0) {
-                console.log("WARNING: Aave pool has no code!");
             }
             if (config.yieldYakFarm.code.length == 0) {
                 console.log("WARNING: YieldYak farm has no code!");

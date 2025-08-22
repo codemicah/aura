@@ -11,14 +11,12 @@ contract YieldOptimizerTest is Test {
     function setUp() public {
         // Create mock addresses for testing
         address mockTraderJoe = address(0x2);
-        address mockAave = address(0x3);
         address mockYieldYak = address(0x4);
         address mockWAVAX = address(0x5);
         address mockUSDC = address(0x6);
 
         yieldOptimizer = new YieldOptimizer(
             mockTraderJoe,
-            mockAave,
             mockYieldYak,
             mockWAVAX,
             mockUSDC

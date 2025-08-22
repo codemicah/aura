@@ -15,6 +15,12 @@ import routes from "./routes";
 import { databaseService } from "./services/database";
 import { blockchainService } from "./services/blockchain";
 import { defiDataService } from "./services/defi";
+import { EventListenerService } from "./services/eventListenerService";
+import { YieldUpdateService } from "./services/yieldUpdateService";
+
+// Initialize Aave backend services
+const eventListenerService = new EventListenerService();
+const yieldUpdateService = new YieldUpdateService();
 
 // Validate configuration before starting
 try {
@@ -108,6 +114,9 @@ async function startServer() {
       } │
 └─────────────────────────────────────────────────────────────────┘
       `);
+
+      // Start Aave backend services
+      startAaveServices();
     });
 
     // Graceful shutdown handling
@@ -122,6 +131,15 @@ async function startServer() {
           logger.info("Database connection closed");
         } catch (error) {
           logger.error("Error closing database", error as Error);
+        }
+
+        // Stop Aave services
+        try {
+          eventListenerService.stopListening();
+          yieldUpdateService.stopPeriodicUpdates();
+          logger.info("Aave services stopped");
+        } catch (error) {
+          logger.error("Error stopping Aave services", error as Error);
         }
 
         logger.info("Graceful shutdown completed");
@@ -156,6 +174,27 @@ async function startServer() {
   } catch (error) {
     logger.error("Failed to start server", error as Error);
     process.exit(1);
+  }
+}
+
+// Start Aave backend services
+async function startAaveServices() {
+  try {
+    logger.info("🔧 Starting Aave backend services...");
+
+    // Start event listener for smart contract events
+    await eventListenerService.startListening();
+
+    // Start periodic yield data updates
+    yieldUpdateService.startPeriodicUpdates();
+
+    // Catch up on any missed events (optional)
+    logger.info("📚 Checking for past events...");
+    await eventListenerService.getPastEvents();
+
+    logger.info("✅ All Aave backend services started successfully!");
+  } catch (error) {
+    logger.error("❌ Error starting Aave backend services:", error as Error);
   }
 }
 

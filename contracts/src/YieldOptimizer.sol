@@ -41,7 +41,6 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
 
     // Protocol addresses (will be set in constructor or setter functions)
     address public traderJoeRouter;
-    address public aavePool;
     address public yieldYakFarm;
 
     // TraderJoe specific addresses - now configurable
@@ -65,19 +64,36 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
     event Withdrawn(address indexed user, uint256 amount);
     event ProtocolAddressUpdated(string protocol, address newAddress);
 
+    // Backend coordination events
+    event AaveDepositRequested(
+        address indexed user,
+        uint256 amount,
+        uint256 timestamp
+    );
+    event AaveWithdrawalRequested(
+        address indexed user,
+        uint256 amount,
+        uint256 timestamp
+    );
+    event BackendAction(
+        string action,
+        address indexed user,
+        uint256 amount,
+        bytes32 requestId
+    );
+
     constructor(
         address _traderJoeRouter,
-        address _aavePool,
         address _yieldYakFarm,
         address _wavax,
         address _usdc
     ) Ownable(msg.sender) {
         // Set protocol addresses
         traderJoeRouter = _traderJoeRouter;
-        aavePool = _aavePool;
         yieldYakFarm = _yieldYakFarm;
         WAVAX = _wavax;
         USDC = _usdc;
+        traderJoePair = 0x099deb72844417148E8ee4aA6752d138BedE0c39;
 
         // Initialize with placeholder yields (will be updated by oracle/keeper)
         currentYields = YieldData({
@@ -319,26 +335,18 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
 
     // Internal helper functions for protocol interactions
     function _depositToAave(uint256 amount) internal {
-        require(aavePool != address(0), "Aave pool not set");
-        require(WAVAX != address(0), "WAVAX not set");
         require(amount > 0, "Amount must be greater than zero");
 
-        // Check if we're in a test environment by checking code size
-        uint256 codeSize;
-        assembly {
-            codeSize := extcodesize(sload(aavePool.slot))
-        }
+        // Backend-managed approach: Contract holds funds, backend does the yield farming
+        // Emit event for backend to process
+        bytes32 requestId = keccak256(
+            abi.encodePacked(msg.sender, amount, block.timestamp)
+        );
+        emit AaveDepositRequested(msg.sender, amount, block.timestamp);
+        emit BackendAction("AAVE_DEPOSIT", msg.sender, amount, requestId);
 
-        // If no code at aavePool address (test environment), skip actual implementation
-        if (codeSize == 0) {
-            // For test environments: just simulate the deposit without external calls
-            return;
-        }
-
-        // Production implementation: Convert AVAX to WAVAX and supply to Aave
-        IWAVAX(WAVAX).deposit{value: amount}();
-        IERC20(WAVAX).approve(aavePool, amount);
-        IAave(aavePool).supply(WAVAX, amount, address(this), 0);
+        // Contract keeps the AVAX - backend will manage external yield farming
+        // This enables testnet operation and production flexibility
     }
 
     function _depositToTraderJoe(uint256 amount) internal {
@@ -448,10 +456,16 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
         IYieldYak(yieldYakFarm).deposit{value: amount}();
     }
 
-    function _withdrawFromAave(uint256 amount) internal view returns (uint256) {
-        // Mock implementation for hackathon demo
-        // In production, this would interact with Aave V3 Pool contract
-        // For demo purposes, we simulate withdrawal with potential yield gains
+    function _withdrawFromAave(uint256 amount) internal returns (uint256) {
+        // Backend-managed approach: Request withdrawal from backend service
+        bytes32 requestId = keccak256(
+            abi.encodePacked(msg.sender, amount, block.timestamp, "withdraw")
+        );
+        emit AaveWithdrawalRequested(msg.sender, amount, block.timestamp);
+        emit BackendAction("AAVE_WITHDRAW", msg.sender, amount, requestId);
+
+        // For immediate response, simulate yield gains based on current APY
+        // Backend will handle actual yield settlement asynchronously
         uint256 withdrawnAmount = (amount *
             (10000 + currentYields.aaveAPY / 365)) / 10000;
         return withdrawnAmount;
@@ -580,8 +594,6 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
             protocolHash == keccak256(abi.encodePacked("traderjoe_pair"))
         ) {
             traderJoePair = newAddress;
-        } else if (protocolHash == keccak256(abi.encodePacked("aave"))) {
-            aavePool = newAddress;
         } else if (protocolHash == keccak256(abi.encodePacked("yieldyak"))) {
             yieldYakFarm = newAddress;
         } else if (protocolHash == keccak256(abi.encodePacked("wavax"))) {

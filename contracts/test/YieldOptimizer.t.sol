@@ -39,7 +39,6 @@ contract YieldOptimizerTest is Test {
         // Deploy YieldOptimizer contract with test configuration
         optimizer = new YieldOptimizer(
             config.traderJoeRouter,
-            config.aavePool,
             config.yieldYakFarm,
             config.wavax,
             config.usdc

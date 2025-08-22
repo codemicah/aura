@@ -16,7 +16,6 @@ contract YieldYakTest is Test {
         // Deploy with mock addresses
         optimizer = new YieldOptimizer(
             address(0x1), // traderJoeRouter
-            address(0x2), // aavePool
             address(0x3), // yieldYakFarm
             address(0x4), // WAVAX
             address(0x5) // USDC
