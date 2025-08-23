@@ -6,7 +6,8 @@ import { useYieldOptimizer } from "../hooks/useYieldOptimizer";
 import { TransactionStatus } from "./TransactionStatus";
 import { useNotificationHelpers } from "./NotificationSystem";
 import { CONTRACT_CONSTANTS } from "../config/contracts";
-import { useRiskProfile } from "@/hooks/useRiskProfile";
+import { useRiskAssessment } from "@/hooks/useAI";
+import useRiskProfile from "@/hooks/useRiskProfile";
 
 interface InvestmentFormProps {
   className?: string;

@@ -16,8 +16,7 @@ import {
   useTransactionHistory,
 } from "../../src/hooks/usePortfolio";
 import { useMarketDashboard } from "../../src/hooks/useMarketData";
-import { useAIRecommendations } from "../../src/hooks/useAI";
-import { useRiskProfile } from "../../src/hooks/useRiskProfile";
+import { useAIRecommendations, useRiskAssessment } from "../../src/hooks/useAI";
 import { useAccount } from "wagmi";
 import {
   TrendingUp,
@@ -30,6 +29,7 @@ import {
   AlertCircle,
   CheckCircle,
 } from "lucide-react";
+import useRiskProfile from "@/hooks/useRiskProfile";
 
 function DashboardContent() {
   const {
@@ -38,17 +38,10 @@ function DashboardContent() {
     portfolio: yieldOptimizerPortfolio,
     portfolioMetrics,
   } = useYieldOptimizer();
-  const { portfolio, isLoading: portfolioLoading } = usePortfolio();
   const { transactions } = useTransactionHistory();
   const { marketSummary, avaxPrice } = useMarketDashboard();
   const { recommendation, isLoading: aiLoading } = useAIRecommendations();
-  const {
-    hasProfile,
-    isLoading: profileLoading,
-    riskScore,
-    riskProfile,
-  } = useRiskProfile();
-  const { isConnected } = useAccount();
+  const { riskProfile } = useRiskProfile();
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"overview" | "invest" | "history">(
     "overview"

@@ -3,7 +3,8 @@
 import { useAccount } from "wagmi";
 import { useYieldOptimizer } from "../hooks/useYieldOptimizer";
 import { useAVAXPrice } from "../hooks/useMarketData";
-import { useRiskProfile } from "@/hooks/useRiskProfile";
+import { useRiskAssessment } from "@/hooks/useAI";
+import useRiskProfile from "@/hooks/useRiskProfile";
 
 interface PortfolioOverviewProps {
   className?: string;

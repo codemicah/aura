@@ -8,16 +8,17 @@ import {
   AIRecommendation,
   SurplusCalculation,
 } from "@/types/ai";
+import useRiskProfile from "./useRiskProfile";
 
 // Hook for risk assessment and scoring
 export function useRiskAssessment() {
   const { address } = useAccount();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [riskScore, setRiskScore] = useState<number | null>(null);
-  const [riskProfile, setRiskProfile] = useState<
-    "Conservative" | "Balanced" | "Aggressive" | null
-  >(null);
+  // const [riskScore, setRiskScore] = useState<number | null>(null);
+  // const [riskProfile, setRiskProfile] = useState<
+  //   "Conservative" | "Balanced" | "Aggressive" | null
+  // >(null);
 
   const calculateRiskScore = useCallback(
     async (answers: RiskAssessmentAnswers) => {
@@ -26,9 +27,6 @@ export function useRiskAssessment() {
 
       try {
         const result = await apiClient.calculateRiskScore(answers);
-        setRiskScore(result.riskScore);
-        setRiskProfile(result.riskProfile);
-
         // Save to backend if wallet is connected
         if (address) {
           await apiClient.saveUserProfile(address, {
@@ -55,33 +53,26 @@ export function useRiskAssessment() {
     [address]
   );
 
-  // Load from backend on mount
-  useEffect(() => {
-    const loadProfile = async () => {
-      if (address) {
-        setIsLoading(true);
-        try {
-          // Load from backend only
-          const profile = await apiClient.getUserProfile(address);
-          if (profile) {
-            setRiskScore(profile.riskScore);
-            setRiskProfile(profile.riskProfile);
-          }
-        } catch (err) {
-          console.error("Failed to load profile from backend:", err);
-          setError("Failed to load risk profile");
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    loadProfile();
-  }, [address]);
+  // const loadProfile = async () => {
+  //   if (address) {
+  //     try {
+  //       // Load from backend only
+  //       const profile = await apiClient.getUserProfile(address);
+  //       console.log(profile);
+  //       if (profile) {
+  //         setRiskScore(profile.riskScore);
+  //         setRiskProfile(profile.riskProfile);
+  //       }
+  //       setIsLoading(false);
+  //     } catch (err) {
+  //       console.error("Failed to load profile from backend:", err);
+  //       setError("Failed to load risk profile");
+  //       setIsLoading(false);
+  //     }
+  //   }
+  // };
 
   return {
-    riskScore,
-    riskProfile,
     isLoading,
     error,
     calculateRiskScore,
@@ -284,28 +275,28 @@ export function usePortfolioAnalysis() {
 
 // Combined hook for complete AI flow
 export function useAIFlow() {
-  const riskAssessment = useRiskAssessment();
-  const allocation = useAllocationStrategy(riskAssessment.riskScore);
+  const profile = useRiskProfile();
+  const allocation = useAllocationStrategy(profile.riskScore);
   const recommendations = useAIRecommendations();
   const surplus = useSurplusCalculator();
   const portfolio = usePortfolioAnalysis();
 
   const isLoading =
-    riskAssessment.isLoading ||
+    profile.isLoading ||
     allocation.isLoading ||
     recommendations.isLoading ||
     surplus.isLoading ||
     portfolio.isLoading;
 
   const error =
-    riskAssessment.error ||
+    profile.error ||
     allocation.error ||
     recommendations.error ||
     surplus.error ||
     portfolio.error;
 
   return {
-    riskAssessment,
+    riskAssessment: profile,
     allocation,
     recommendations,
     surplus,

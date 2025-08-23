@@ -1,47 +1,34 @@
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAccount } from "wagmi";
-import { useRiskAssessment } from "./useAI";
-import { useRouter } from "next/navigation";
+import { apiClient } from "@/utils/api";
 
-export function useRiskProfile() {
-  const { address, isConnected } = useAccount();
-  const { riskScore, riskProfile, isLoading } = useRiskAssessment();
-  const router = useRouter();
+const useRiskProfile = () => {
+  const { address } = useAccount();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [riskScore, setRiskScore] = useState<number | null>(null);
+  const [riskProfile, setRiskProfile] = useState<
+    "Conservative" | "Balanced" | "Aggressive" | null
+  >(null);
 
-  // useEffect(() => {
-  //   // Set cookie to indicate profile status
-  //   if (riskProfile && riskScore !== null) {
-  //     document.cookie = `hasRiskProfile=true; path=/; max-age=${60 * 60 * 24 * 30}` // 30 days
-  //   }
-  // }, [riskProfile, riskScore])
-
-  const checkProfileAndRedirect = (redirectTo: string = "/dashboard") => {
-    if (!isConnected) {
-      router.push("/onboarding");
-      return false;
+  const execute = useCallback(async () => {
+    setError(null);
+    try {
+      const profile = await apiClient.getUserProfile(address!);
+      setRiskScore(profile!.riskScore);
+      setRiskProfile(profile!.riskProfile);
+    } catch (err) {
+      setError("Failed to load risk profile");
+    } finally {
+      setIsLoading(false);
     }
+  }, [address]);
 
-    if (!riskProfile || riskScore === null) {
-      router.push(`/onboarding?redirect=${encodeURIComponent(redirectTo)}`);
-      return false;
-    }
+  useEffect(() => {
+    execute();
+  }, [execute, address]);
 
-    return true;
-  };
+  return { riskScore, riskProfile, isLoading, error, refetch: execute };
+};
 
-  const clearProfile = () => {
-    // Clear cookie
-    document.cookie =
-      "hasRiskProfile=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    // Note: Profile data is cleared on the server side when needed
-  };
-
-  return {
-    riskScore,
-    riskProfile,
-    isLoading,
-    hasProfile: !!(riskProfile && riskScore !== null),
-    checkProfileAndRedirect,
-    clearProfile,
-  };
-}
+export default useRiskProfile;

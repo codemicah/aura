@@ -7,48 +7,30 @@ import ProtectedRoute from "../../src/components/ProtectedRoute";
 import { ConnectButton } from "../../src/components/ConnectButton";
 import { RiskAssessment } from "../../src/components/RiskAssessment";
 import { useAccount } from "wagmi";
-import { useRiskProfile } from "../../src/hooks/useRiskProfile";
 import { useLoading } from "../../src/hooks/useLoading";
+import { useRiskAssessment } from "@/hooks/useAI";
+import useRiskProfile from "@/hooks/useRiskProfile";
+import RiskProfile from "../risk-profile/page";
 
 function OnboardingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isConnected } = useAccount();
-  const { hasProfile } = useRiskProfile();
   const [isCompleted, setIsCompleted] = useState(false);
   const [riskProfile, setRiskProfile] = useState<any>(null);
-  const { setLoading } = useLoading();
+  const { isLoading, setLoading } = useLoading();
+  const { riskProfile: hasRiskProfile, isLoading: isFetchingRiskProfile } =
+    useRiskProfile();
 
   // Get redirect URL from query params
   const redirectTo = searchParams.get("redirect") || "/risk-profile";
 
-  // Check if user already has a profile
-  useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      if (hasProfile && isConnected) {
-        router.push(redirectTo);
-        setLoading(false);
-      } else {
-        setLoading(false);
-      }
-    }, 1000);
-  }, [hasProfile, isConnected, redirectTo, router, setLoading]);
-
   const handleRiskAssessmentComplete = (data: any) => {
     setRiskProfile(data);
     setIsCompleted(true);
-
-    // // Set cookie to indicate profile completion
-    // document.cookie = `hasRiskProfile=true; path=/; max-age=${
-    //   60 * 60 * 24 * 30
-    // }`;
-
-    // The profile is automatically saved to backend by the useRiskAssessment hook
   };
 
   const handleContinueToDashboard = () => {
-    router.push(redirectTo);
+    if (redirectTo) router.push(redirectTo);
   };
 
   const getRiskLevelColor = (riskScore: number) => {
@@ -69,7 +51,9 @@ function OnboardingContent() {
     return { aave: 20, traderjoe: 30, yieldyak: 50 };
   };
 
-  return (
+  return !isLoading && !isFetchingRiskProfile && hasRiskProfile ? (
+    <RiskProfile />
+  ) : (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}
       <header className="border-b border-gray-200 bg-white/80 backdrop-blur-sm">
