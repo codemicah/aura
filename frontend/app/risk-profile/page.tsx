@@ -1,10 +1,8 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import ProtectedRoute from "../../src/components/ProtectedRoute";
-import { ConnectButton } from "../../src/components/ConnectButton";
 import { RiskAssessment } from "../../src/components/RiskAssessment";
 import Header from "../../src/components/Header";
 import { useAccount } from "wagmi";
@@ -18,6 +16,7 @@ import {
   AlertCircle,
   Info,
 } from "lucide-react";
+import { useLoading } from "@/hooks/useLoading";
 
 function RiskProfileContent() {
   const router = useRouter();
@@ -25,18 +24,25 @@ function RiskProfileContent() {
   const { hasProfile, riskScore, riskProfile, clearProfile } = useRiskProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [profileData, setProfileData] = useState<any>(null);
+  const { isLoading, setLoading } = useLoading();
 
-  // Profile data is now loaded from server via useRiskProfile hook
   useEffect(() => {
+    setLoading(true);
     if (riskScore && riskProfile) {
       setProfileData({ riskScore, riskProfile });
     }
+    setTimeout(() => {
+      setLoading(false);
+    }, 500); // delay so profile can be set
   }, [riskScore, riskProfile]);
 
   const handleRiskAssessmentComplete = (data: any) => {
+    setLoading(true);
     setProfileData(data);
     setIsEditing(false);
-
+    setTimeout(() => {
+      setLoading(false);
+    }, 500);
     // Set cookie to indicate profile completion
     // document.cookie = `hasRiskProfile=true; path=/; max-age=${
     //   60 * 60 * 24 * 30
@@ -83,7 +89,7 @@ function RiskProfileContent() {
   };
 
   // Show assessment form if editing or no profile exists
-  if (isEditing || !profileData) {
+  if (!isLoading && (isEditing || !profileData)) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
         <Header />
