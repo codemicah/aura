@@ -186,13 +186,14 @@ export class EventListenerService {
 
     try {
       const currentBlock = await this.provider.getBlockNumber();
+      const startingBlock = currentBlock <= 2000 ? 0 : currentBlock - 2000;
       logger.info(`Current block: ${currentBlock}`);
 
       // Fetch past Aave deposit events
       const depositFilter = this.contract.filters.AaveDepositRequested();
       const depositEvents = await this.contract.queryFilter(
         depositFilter,
-        currentBlock - 2000,
+        startingBlock,
         currentBlock
       );
 
@@ -213,7 +214,7 @@ export class EventListenerService {
       const withdrawalFilter = this.contract.filters.AaveWithdrawalRequested();
       const withdrawalEvents = await this.contract.queryFilter(
         withdrawalFilter,
-        currentBlock - 2000,
+        startingBlock,
         currentBlock
       );
 

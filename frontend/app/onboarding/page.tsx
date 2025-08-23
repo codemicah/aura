@@ -8,6 +8,7 @@ import { ConnectButton } from "../../src/components/ConnectButton";
 import { RiskAssessment } from "../../src/components/RiskAssessment";
 import { useAccount } from "wagmi";
 import { useRiskProfile } from "../../src/hooks/useRiskProfile";
+import { useLoading } from "../../src/hooks/useLoading";
 
 function OnboardingContent() {
   const router = useRouter();
@@ -16,25 +17,32 @@ function OnboardingContent() {
   const { hasProfile } = useRiskProfile();
   const [isCompleted, setIsCompleted] = useState(false);
   const [riskProfile, setRiskProfile] = useState<any>(null);
+  const { setLoading } = useLoading();
 
   // Get redirect URL from query params
-  const redirectTo = searchParams.get("redirect") || "/dashboard";
+  const redirectTo = searchParams.get("redirect") || "/risk-profile";
 
   // Check if user already has a profile
   useEffect(() => {
-    if (hasProfile && isConnected) {
-      router.push(redirectTo);
-    }
-  }, [hasProfile, isConnected, redirectTo, router]);
+    setLoading(true);
+    setTimeout(() => {
+      if (hasProfile && isConnected) {
+        router.push(redirectTo);
+        setLoading(false);
+      } else {
+        setLoading(false);
+      }
+    }, 1000);
+  }, [hasProfile, isConnected, redirectTo, router, setLoading]);
 
   const handleRiskAssessmentComplete = (data: any) => {
     setRiskProfile(data);
     setIsCompleted(true);
 
-    // Set cookie to indicate profile completion
-    document.cookie = `hasRiskProfile=true; path=/; max-age=${
-      60 * 60 * 24 * 30
-    }`;
+    // // Set cookie to indicate profile completion
+    // document.cookie = `hasRiskProfile=true; path=/; max-age=${
+    //   60 * 60 * 24 * 30
+    // }`;
 
     // The profile is automatically saved to backend by the useRiskAssessment hook
   };
@@ -217,7 +225,7 @@ function OnboardingContent() {
                   onClick={handleContinueToDashboard}
                   className="bg-blue-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors text-lg"
                 >
-                  Continue to Dashboard
+                  Continue
                 </button>
                 <div>
                   <button

@@ -260,18 +260,27 @@ export function useYieldOptimizer() {
     }
   };
 
-  const rebalance = async () => {
+  const rebalance = async (userProfile?: any) => {
     if (!contractAddress)
       throw new Error("Contract not available on this network");
 
     try {
       initializeTransactionSteps("rebalance");
-
-      await rebalancePortfolio({
-        address: contractAddress,
-        abi: YIELD_OPTIMIZER_ABI,
-        functionName: "rebalance",
-      });
+      // If userProfile is provided, pass as argument
+      if (userProfile) {
+        await rebalancePortfolio({
+          address: contractAddress,
+          abi: YIELD_OPTIMIZER_ABI,
+          functionName: "rebalance",
+          args: [userProfile],
+        });
+      } else {
+        await rebalancePortfolio({
+          address: contractAddress,
+          abi: YIELD_OPTIMIZER_ABI,
+          functionName: "rebalance",
+        });
+      }
     } catch (error) {
       updateTransactionStep("confirm", {
         status: "error",
@@ -537,9 +546,11 @@ export function useYieldOptimizer() {
     };
   };
 
+  const formattedPortfolio = formatPortfolioData();
   return {
     // Read data
-    portfolio: formatPortfolioData(),
+    portfolio: formattedPortfolio,
+    profile: formattedPortfolio?.profile,
     yields: formatYieldsData(),
     rebalanceRec: formatRebalanceData(),
     portfolioMetrics: getPortfolioMetrics(),

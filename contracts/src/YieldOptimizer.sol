@@ -117,8 +117,8 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
         profile.totalDeposited += msg.value;
         profile.lastRebalance = block.timestamp;
 
-        // Calculate allocation based on risk score
-        _allocateFunds(msg.sender, msg.value, _riskScore);
+        // Allocate funds using total investment and updated risk score
+        _allocateFunds(msg.sender, profile.totalDeposited, _riskScore);
 
         emit YieldOptimized(msg.sender, msg.value, _riskScore);
     }
@@ -263,11 +263,19 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
     }
 
     /**
-     * @dev Execute rebalancing for a user
+     * @dev Rebalance portfolio using the latest user profile
+     * @param updatedProfile The latest UserProfile object (riskScore, autoRebalance, etc.)
      */
-    function rebalance() external nonReentrant {
+    function rebalance(
+        UserProfile calldata updatedProfile
+    ) external nonReentrant {
         UserProfile storage profile = userProfiles[msg.sender];
         require(profile.totalDeposited > 0, "No deposits to rebalance");
+
+        // Always update blockchain record with latest profile
+        profile.riskScore = updatedProfile.riskScore;
+        profile.autoRebalance = updatedProfile.autoRebalance;
+        profile.lastRebalance = block.timestamp;
 
         ProtocolAllocation storage allocation = userAllocations[msg.sender];
         uint256 totalValue = allocation.aaveAmount +
@@ -278,7 +286,7 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
             uint256 newAave,
             uint256 newTraderJoe,
             uint256 newYieldYak
-        ) = _calculateOptimalAllocation(totalValue, profile.riskScore);
+        ) = _calculateOptimalAllocation(totalValue, updatedProfile.riskScore);
 
         // Execute rebalancing logic (withdraw and redeposit)
         _executeRebalance(
@@ -289,7 +297,6 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
             newYieldYak
         );
 
-        profile.lastRebalance = block.timestamp;
         emit Rebalanced(msg.sender, totalValue);
     }
 
@@ -595,8 +602,8 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
     function _shouldRebalance(
         ProtocolAllocation memory current,
         uint256 targetAave,
-        uint256 targetTraderJoe,
-        uint256 targetYieldYak,
+        uint256 /*targetTraderJoe*/,
+        uint256 /*targetYieldYak*/,
         uint256 totalValue
     ) internal pure returns (bool) {
         uint256 aaveDiff = current.aaveAmount > targetAave
@@ -609,7 +616,7 @@ contract YieldOptimizer is Ownable, ReentrancyGuard {
     }
 
     function _executeRebalance(
-        address user,
+        address /*user*/,
         ProtocolAllocation storage current,
         uint256 targetAave,
         uint256 targetTraderJoe,
