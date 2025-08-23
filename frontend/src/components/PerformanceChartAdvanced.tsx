@@ -171,18 +171,18 @@ export default function PerformanceChartAdvanced({
   }
 
   // Defensive: If no data, show a message instead of rendering chart
-  if (!data || data.length === 0) {
-    return (
-      <div
-        className="bg-gray-900 rounded-xl border border-gray-800 p-6 flex items-center justify-center"
-        style={{ height }}
-      >
-        <p className="text-gray-500 text-sm">
-          No performance data available for this period.
-        </p>
-      </div>
-    );
-  }
+  // if (!data || data.length === 0) {
+  //   return (
+  //     <div
+  //       className="bg-gray-900 rounded-xl border border-gray-800 p-6 flex items-center justify-center"
+  //       style={{ height }}
+  //     >
+  //       <p className="text-gray-500 text-sm">
+  //         No performance data available for this period.
+  //       </p>
+  //     </div>
+  //   );
+  // }
 
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload || !payload.length) return null;
