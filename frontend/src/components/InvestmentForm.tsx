@@ -155,6 +155,12 @@ export function InvestmentForm({ className = "" }: InvestmentFormProps) {
 
   const handleRebalance = async () => {
     try {
+      console.log(
+        "Rebalancing with profile:",
+        profile,
+        "and riskScore:",
+        riskScore
+      );
       // Pass latest profile from hook to rebalance
       await rebalance({ ...profile, riskScore });
       notifyInfo(
