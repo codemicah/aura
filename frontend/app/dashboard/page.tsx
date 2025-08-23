@@ -179,7 +179,7 @@ function DashboardContent() {
           />
           <StatCard
             title="Risk Profile"
-            value={riskProfile || "Not Set"}
+            value={riskProfile || "--"}
             icon={Shield}
             color="bg-gradient-to-br from-purple-600 to-purple-700"
           />

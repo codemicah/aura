@@ -3,7 +3,7 @@
 import { useAccount } from "wagmi";
 import { useYieldOptimizer } from "../hooks/useYieldOptimizer";
 import { useAVAXPrice } from "../hooks/useMarketData";
-import { useRiskAssessment } from "../hooks/useAI";
+import { useRiskProfile } from "@/hooks/useRiskProfile";
 
 interface PortfolioOverviewProps {
   className?: string;
@@ -22,7 +22,7 @@ export function PortfolioOverview({ className = "" }: PortfolioOverviewProps) {
     currentBlock,
   } = useYieldOptimizer();
   const { price: avaxPrice, isLoading: isPriceLoading } = useAVAXPrice();
-  const { riskScore, riskProfile } = useRiskAssessment();
+  const { riskScore = 50, riskProfile } = useRiskProfile();
 
   const getRiskLevelName = (riskScore: number) => {
     if (riskScore <= 33) return "Conservative";
@@ -201,15 +201,11 @@ export function PortfolioOverview({ className = "" }: PortfolioOverviewProps) {
         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
           <div className="text-sm text-gray-600 mb-1">Risk Profile</div>
           <div
-            className={`text-2xl font-bold ${
-              portfolio
-                ? getRiskLevelColor(portfolio.profile?.riskScore || 50)
-                : "text-blue-600"
+            className={`text-xl font-extrabold ${
+              portfolio ? getRiskLevelColor(riskScore!) : "text-blue-600"
             }`}
           >
-            {portfolio
-              ? getRiskLevelName(portfolio.profile?.riskScore || 50)
-              : riskProfile || "Not Set"}
+            {portfolio ? getRiskLevelName(riskScore!) : riskProfile || "--"}
           </div>
           <div className="text-sm text-gray-500 mt-1">
             Score: {portfolio?.profile?.riskScore || riskScore || 0}/100

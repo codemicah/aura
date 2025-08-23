@@ -38,12 +38,12 @@ function RiskProfileContent() {
     setIsEditing(false);
 
     // Set cookie to indicate profile completion
-    document.cookie = `hasRiskProfile=true; path=/; max-age=${
-      60 * 60 * 24 * 30
-    }`;
+    // document.cookie = `hasRiskProfile=true; path=/; max-age=${
+    //   60 * 60 * 24 * 30
+    // }`;
 
     // Refresh the page to update the profile display
-    window.location.reload();
+    // window.location.reload();
   };
 
   const handleEditProfile = () => {
