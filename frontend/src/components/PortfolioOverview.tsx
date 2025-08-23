@@ -51,8 +51,6 @@ export function PortfolioOverview({ className = "" }: PortfolioOverviewProps) {
     return `${value.toFixed(2)}%`;
   };
 
-  // Component assumes real data is always available or loading
-
   // Show loading state while fetching AVAX price
   if (isPriceLoading || !avaxPrice) {
     return (

@@ -67,7 +67,7 @@ export default function PerformanceChartAdvanced({
         ? 30
         : selectedPeriod === "90d"
         ? 90
-        : 365;
+        : 364;
     const now = new Date();
 
     // Use real portfolio value or default to invested amount
@@ -166,6 +166,20 @@ export default function PerformanceChartAdvanced({
             <p className="text-gray-500 text-sm">Loading chart data...</p>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  // Defensive: If no data, show a message instead of rendering chart
+  if (!data || data.length === 0) {
+    return (
+      <div
+        className="bg-gray-900 rounded-xl border border-gray-800 p-6 flex items-center justify-center"
+        style={{ height }}
+      >
+        <p className="text-gray-500 text-sm">
+          No performance data available for this period.
+        </p>
       </div>
     );
   }
