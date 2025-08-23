@@ -134,6 +134,26 @@
     "type": "event"
   },
   {
+    "inputs": [],
+    "name": "emergencyWithdraw",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint8",
+        "name": "_riskScore",
+        "type": "uint8"
+      }
+    ],
+    "name": "optimizeYield",
+    "outputs": [],
+    "stateMutability": "payable",
+    "type": "function"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -172,6 +192,41 @@
     "type": "event"
   },
   {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint8",
+            "name": "riskScore",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "totalDeposited",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "lastRebalance",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "autoRebalance",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct YieldOptimizer.UserProfile",
+        "name": "updatedProfile",
+        "type": "tuple"
+      }
+    ],
+    "name": "rebalance",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -189,6 +244,85 @@
     ],
     "name": "Rebalanced",
     "type": "event"
+  },
+  {
+    "inputs": [],
+    "name": "renounceOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_wavax",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_usdc",
+        "type": "address"
+      }
+    ],
+    "name": "setTokenAddresses",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "newOwner",
+        "type": "address"
+      }
+    ],
+    "name": "transferOwnership",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "protocol",
+        "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "newAddress",
+        "type": "address"
+      }
+    ],
+    "name": "updateProtocolAddress",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "_aaveAPY",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_traderJoeAPY",
+        "type": "uint256"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_yieldYakAPY",
+        "type": "uint256"
+      }
+    ],
+    "name": "updateYields",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
   },
   {
     "anonymous": false,
@@ -274,58 +408,6 @@
   },
   {
     "inputs": [],
-    "name": "MIN_DEPOSIT",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "REBALANCE_THRESHOLD",
-    "outputs": [
-      {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "USDC",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "WAVAX",
-    "outputs": [
-      {
-        "internalType": "address",
-        "name": "",
-        "type": "address"
-      }
-    ],
-    "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
     "name": "currentYields",
     "outputs": [
       {
@@ -350,13 +432,6 @@
       }
     ],
     "stateMutability": "view",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "emergencyWithdraw",
-    "outputs": [],
-    "stateMutability": "nonpayable",
     "type": "function"
   },
   {
@@ -490,16 +565,16 @@
     "type": "function"
   },
   {
-    "inputs": [
+    "inputs": [],
+    "name": "MIN_DEPOSIT",
+    "outputs": [
       {
-        "internalType": "uint8",
-        "name": "_riskScore",
-        "type": "uint8"
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
-    "name": "optimizeYield",
-    "outputs": [],
-    "stateMutability": "payable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -517,34 +592,15 @@
   },
   {
     "inputs": [],
-    "name": "rebalance",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [],
-    "name": "renounceOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
+    "name": "REBALANCE_THRESHOLD",
+    "outputs": [
       {
-        "internalType": "address",
-        "name": "_wavax",
-        "type": "address"
-      },
-      {
-        "internalType": "address",
-        "name": "_usdc",
-        "type": "address"
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
       }
     ],
-    "name": "setTokenAddresses",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -574,57 +630,16 @@
     "type": "function"
   },
   {
-    "inputs": [
+    "inputs": [],
+    "name": "USDC",
+    "outputs": [
       {
         "internalType": "address",
-        "name": "newOwner",
+        "name": "",
         "type": "address"
       }
     ],
-    "name": "transferOwnership",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "string",
-        "name": "protocol",
-        "type": "string"
-      },
-      {
-        "internalType": "address",
-        "name": "newAddress",
-        "type": "address"
-      }
-    ],
-    "name": "updateProtocolAddress",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
-  },
-  {
-    "inputs": [
-      {
-        "internalType": "uint256",
-        "name": "_aaveAPY",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_traderJoeAPY",
-        "type": "uint256"
-      },
-      {
-        "internalType": "uint256",
-        "name": "_yieldYakAPY",
-        "type": "uint256"
-      }
-    ],
-    "name": "updateYields",
-    "outputs": [],
-    "stateMutability": "nonpayable",
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -685,6 +700,19 @@
         "internalType": "bool",
         "name": "autoRebalance",
         "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "WAVAX",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
       }
     ],
     "stateMutability": "view",
